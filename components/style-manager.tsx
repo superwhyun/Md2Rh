@@ -1,0 +1,170 @@
+"use client"
+
+import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Trash2, Plus, Copy } from "lucide-react"
+import { type DocumentStyle, createNewStyle } from "@/lib/default-styles"
+import { StyleEditor } from "@/components/style-editor"
+
+interface StyleManagerProps {
+  isOpen: boolean
+  onClose: () => void
+  styles: DocumentStyle[]
+  onStylesUpdate: (styles: DocumentStyle[]) => void
+  selectedStyleId: string
+  onStyleSelect: (styleId: string) => void
+}
+
+export function StyleManager({
+  isOpen,
+  onClose,
+  styles,
+  onStylesUpdate,
+  selectedStyleId,
+  onStyleSelect,
+}: StyleManagerProps) {
+  const [editingStyle, setEditingStyle] = useState<DocumentStyle | null>(null)
+  const [newStyleName, setNewStyleName] = useState("")
+
+  const handleCreateStyle = () => {
+    if (!newStyleName.trim()) return
+
+    const newStyle = createNewStyle(newStyleName.trim())
+    const updatedStyles = [...styles, newStyle]
+    onStylesUpdate(updatedStyles)
+    onStyleSelect(newStyle.id)
+    setNewStyleName("")
+  }
+
+  const handleDuplicateStyle = (style: DocumentStyle) => {
+    const duplicatedStyle = {
+      ...style,
+      id: Date.now().toString(),
+      name: `${style.name} (복사본)`,
+    }
+    const updatedStyles = [...styles, duplicatedStyle]
+    onStylesUpdate(updatedStyles)
+    onStyleSelect(duplicatedStyle.id)
+  }
+
+  const handleDeleteStyle = (styleId: string) => {
+    if (styles.length <= 1) return // 최소 하나의 스타일은 유지
+
+    const updatedStyles = styles.filter((style) => style.id !== styleId)
+    onStylesUpdate(updatedStyles)
+
+    if (selectedStyleId === styleId) {
+      onStyleSelect(updatedStyles[0].id)
+    }
+  }
+
+  const handleStyleUpdate = (updatedStyle: DocumentStyle) => {
+    const updatedStyles = styles.map((style) => (style.id === updatedStyle.id ? updatedStyle : style))
+    onStylesUpdate(updatedStyles)
+    setEditingStyle(null)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>문서 서식 관리자</DialogTitle>
+        </DialogHeader>
+
+        <Tabs defaultValue="manage" className="h-full">
+          <TabsList>
+            <TabsTrigger value="manage">서식 관리</TabsTrigger>
+            <TabsTrigger value="edit">서식 편집</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="manage" className="space-y-4">
+            {/* 새 서식 생성 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">새 서식 생성</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="서식 이름을 입력하세요"
+                    value={newStyleName}
+                    onChange={(e) => setNewStyleName(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleCreateStyle()}
+                  />
+                  <Button onClick={handleCreateStyle} disabled={!newStyleName.trim()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    생성
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 기존 서식 목록 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">기존 서식</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-60 overflow-auto">
+                  {styles.map((style) => (
+                    <div
+                      key={style.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                        selectedStyleId === style.id ? "border-primary bg-primary/5" : "border-border"
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium">{style.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedStyleId === style.id ? "현재 선택됨" : "클릭하여 선택"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStyleSelect(style.id)}
+                          disabled={selectedStyleId === style.id}
+                        >
+                          선택
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setEditingStyle(style)}>
+                          편집
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDuplicateStyle(style)}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteStyle(style.id)}
+                          disabled={styles.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="edit" className="h-full">
+            {editingStyle ? (
+              <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
+            ) : (
+              <div className="flex items-center justify-center h-40">
+                <p className="text-muted-foreground">편집할 서식을 선택해주세요</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  )
+}
