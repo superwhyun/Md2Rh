@@ -35,20 +35,10 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       const spacing = level.markerSpacing || '0.3em'
       
       return `
-      .custom-ul .ul-level-${index}::before {
-        content: "${level.marker}";
-        margin-right: ${spacing};
-        font-size: ${level.fontSize};
-        font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
-        font-weight: ${level.fontWeight};
-        color: ${level.color === 'inherit' ? 'inherit' : level.color};
-        display: inline-block;
-        width: ${markerWidth}em;
-      }
-      
       .custom-ul .ul-level-${index} {
-        padding-left: ${level.indentation};
-        text-indent: -${markerWidth}em;
+        position: relative;
+        margin-left: ${level.indentation};
+        padding-left: calc(${markerWidth}em + ${spacing});
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
         font-weight: ${level.fontWeight};
@@ -63,6 +53,26 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
           background-color: #f9f9f9;
         ` : ''}
       }
+      
+      .custom-ul .ul-level-${index}::before {
+        content: "${level.marker}";
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: ${level.fontSize};
+        font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
+        font-weight: ${level.fontWeight};
+        color: ${level.color === 'inherit' ? 'inherit' : level.color};
+        width: ${markerWidth}em;
+      }
+      
+      ${level.boxStyle ? `
+      .custom-ul .ul-level-${index} ul {
+        margin-left: -8px;
+        margin-top: 4px;
+        position: relative;
+      }
+      ` : ''}
     `}).join('\n')
     
     // 디버깅: 생성된 CSS 확인

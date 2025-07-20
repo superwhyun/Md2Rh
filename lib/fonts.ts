@@ -1,7 +1,7 @@
 export interface FontOption {
   name: string
   value: string
-  category: 'system' | 'serif' | 'sans-serif' | 'monospace' | 'google'
+  category: 'system' | 'serif' | 'sans-serif' | 'monospace' | 'google' | 'naver'
 }
 
 export const fontOptions: FontOption[] = [
@@ -38,6 +38,16 @@ export const fontOptions: FontOption[] = [
   { name: '나눔펜스크립트', value: "'Nanum Pen Script', cursive", category: 'google' },
   { name: 'IBM Plex Sans KR', value: "'IBM Plex Sans KR', sans-serif", category: 'google' },
   { name: 'Sunflower', value: "'Sunflower', sans-serif", category: 'google' },
+
+  // 네이버 웹 폰트
+  { name: '나눔스퀘어', value: "'NanumSquare', sans-serif", category: 'naver' },
+  { name: '나눔스퀘어라운드', value: "'NanumSquareRound', sans-serif", category: 'naver' },
+  { name: '나눔바른고딕', value: "'NanumBarunGothic', sans-serif", category: 'naver' },
+  { name: '나눔바른펜', value: "'NanumBarunPen', cursive", category: 'naver' },
+  { name: '나눔고딕에코', value: "'NanumGothicEco', sans-serif", category: 'naver' },
+  { name: '나눔명조에코', value: "'NanumMyeongjoEco', serif", category: 'naver' },
+  { name: '나눔브러시스크립트', value: "'NanumBrushScript', cursive", category: 'naver' },
+  { name: '마루부리', value: "'MaruBuri', sans-serif", category: 'naver' },
 ]
 
 export const fontCategories = [
@@ -46,6 +56,7 @@ export const fontCategories = [
   { label: 'Serif', value: 'serif' },
   { label: 'Monospace', value: 'monospace' },
   { label: 'Google Fonts', value: 'google' },
+  { label: '네이버 웹폰트', value: 'naver' },
 ]
 
 export function getFontsByCategory(category: string): FontOption[] {
