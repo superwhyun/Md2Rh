@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Plus, Copy } from "lucide-react"
 import { type DocumentStyle, createNewStyle } from "@/lib/default-styles"
@@ -75,13 +74,8 @@ export function StyleManager({
           <DialogTitle>문서 서식 관리자</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="manage" className="h-full">
-          <TabsList>
-            <TabsTrigger value="manage">서식 관리</TabsTrigger>
-            <TabsTrigger value="edit">서식 편집</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="manage" className="space-y-4">
+        {!editingStyle ? (
+          <div className="space-y-4">
             {/* 새 서식 생성 */}
             <Card>
               <CardHeader>
@@ -152,18 +146,10 @@ export function StyleManager({
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="edit" className="h-full">
-            {editingStyle ? (
-              <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
-            ) : (
-              <div className="flex items-center justify-center h-40">
-                <p className="text-muted-foreground">편집할 서식을 선택해주세요</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
+        )}
       </DialogContent>
     </Dialog>
   )

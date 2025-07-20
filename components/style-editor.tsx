@@ -414,9 +414,7 @@ export function StyleEditor({ style, onSave, onCancel }: StyleEditorProps) {
             </CardContent>
           </Card>
           
-          {renderStyleControls("순서 없는 목록 (UL)", "ul")}
           {renderStyleControls("순서 있는 목록 (OL)", "ol")}
-          {renderStyleControls("목록 항목 (LI)", "li")}
         </TabsContent>
 
         <TabsContent value="code" className="space-y-4 max-h-96 overflow-auto">
