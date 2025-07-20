@@ -21,8 +21,24 @@ export interface ULLevelStyle {
   markerSpacing: string
 }
 
+export type OLNumberingStyle = 'decimal' | 'decimal-dot' | 'circled' | 'lower-alpha' | 'upper-alpha' | 'lower-roman' | 'parenthesis'
+
+export interface OLLevelStyle {
+  numberingStyle: OLNumberingStyle
+  fontSize: string
+  fontFamily: string
+  fontWeight: string
+  color: string
+  backgroundColor: string
+  padding: string
+  indentation: string
+  boxStyle: boolean
+  markerSpacing: string
+}
+
 export interface ListCustomization {
   ulLevels: ULLevelStyle[]
+  olLevels: OLLevelStyle[]
   olMarker: string
 }
 
@@ -69,6 +85,13 @@ export function getDefaultStyles(): DocumentStyle[] {
           { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
           { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
           { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
+        ],
+        olLevels: [
+          { numberingStyle: 'decimal', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: '#ff0000', backgroundColor: '#ffc0cb', padding: '8px', indentation: '1rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'decimal-dot', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '2rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-alpha', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-roman', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'circled', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '5rem', boxStyle: false, markerSpacing: '0.5em' }
         ],
         olMarker: ''
       },
@@ -201,6 +224,13 @@ export function getDefaultStyles(): DocumentStyle[] {
           { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
           { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
         ],
+        olLevels: [
+          { numberingStyle: 'decimal', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: '#ff0000', backgroundColor: '#ffc0cb', padding: '8px', indentation: '1rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'decimal-dot', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '2rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-alpha', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-roman', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'circled', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '5rem', boxStyle: false, markerSpacing: '0.5em' }
+        ],
         olMarker: ''
       },
       styles: {
@@ -328,6 +358,13 @@ export function getDefaultStyles(): DocumentStyle[] {
           { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
           { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
           { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
+        ],
+        olLevels: [
+          { numberingStyle: 'decimal', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: '#ff0000', backgroundColor: '#ffc0cb', padding: '8px', indentation: '1rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'decimal-dot', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '2rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-alpha', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'lower-roman', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4rem', boxStyle: false, markerSpacing: '0.5em' },
+          { numberingStyle: 'circled', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '5rem', boxStyle: false, markerSpacing: '0.5em' }
         ],
         olMarker: ''
       },

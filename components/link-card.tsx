@@ -86,7 +86,7 @@ export function LinkCard({ url }: LinkCardProps) {
           href={preview.url} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="block"
+          className="block link-card"
         >
           <div className="flex gap-3 p-3">
             {/* 이미지 */}
