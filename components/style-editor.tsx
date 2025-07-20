@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { DocumentStyle, NumberingType, ULLevelStyle, OLLevelStyle, OLNumberingStyle } from "@/lib/default-styles"
+import type { DocumentStyle, NumberingType, ULLevelStyle } from "@/lib/default-styles"
 import { ColorPicker } from "@/components/color-picker"
 import { fontOptions, fontCategories, getFontsByCategory } from "@/lib/fonts"
 
@@ -56,17 +56,6 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
     }))
   }
 
-  const updateListCustomization = (field: 'olMarker', value: string) => {
-    setEditedStyle((prev) => ({
-      ...prev,
-      listCustomization: {
-        ...prev.listCustomization,
-        ulLevels: prev.listCustomization?.ulLevels || getDefaultULLevels(),
-        olLevels: prev.listCustomization?.olLevels || getDefaultOLLevels(),
-        [field]: value,
-      },
-    }))
-  }
 
   const updateULLevel = (levelIndex: number, field: keyof ULLevelStyle, value: string | boolean) => {
     setEditedStyle((prev) => {
@@ -82,33 +71,11 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
         listCustomization: {
           ...prev.listCustomization,
           ulLevels: newLevels,
-          olLevels: prev.listCustomization?.olLevels || getDefaultOLLevels(),
-          olMarker: prev.listCustomization?.olMarker || '',
         },
       }
     })
   }
 
-  const updateOLLevel = (levelIndex: number, field: keyof OLLevelStyle, value: string | boolean) => {
-    setEditedStyle((prev) => {
-      const currentLevels = prev.listCustomization?.olLevels || getDefaultOLLevels()
-      const newLevels = [...currentLevels]
-      newLevels[levelIndex] = {
-        ...newLevels[levelIndex],
-        [field]: value,
-      }
-      
-      return {
-        ...prev,
-        listCustomization: {
-          ...prev.listCustomization,
-          ulLevels: prev.listCustomization?.ulLevels || getDefaultULLevels(),
-          olLevels: newLevels,
-          olMarker: prev.listCustomization?.olMarker || '',
-        },
-      }
-    })
-  }
 
   const getDefaultULLevels = (): ULLevelStyle[] => [
     { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em' },
@@ -118,13 +85,6 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
     { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
-  const getDefaultOLLevels = (): OLLevelStyle[] => [
-    { numberingStyle: 'decimal', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: '#ff0000', backgroundColor: '#ffc0cb', padding: '8px', indentation: '1rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'decimal-dot', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '2rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'lower-alpha', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'lower-roman', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'circled', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '5rem', boxStyle: false, markerSpacing: '0.5em' }
-  ]
 
   const numberingOptions = [
     { label: '숫자 (1., 2., 3.)', value: 'number' as NumberingType },
@@ -134,15 +94,6 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
     { label: '없음', value: 'none' as NumberingType },
   ]
 
-  const olNumberingOptions = [
-    { label: '1, 2, 3, 4, 5', value: 'decimal' as OLNumberingStyle },
-    { label: '1., 2., 3., 4., 5.', value: 'decimal-dot' as OLNumberingStyle },
-    { label: '①, ②, ③, ④, ⑤', value: 'circled' as OLNumberingStyle },
-    { label: 'a, b, c, d, e', value: 'lower-alpha' as OLNumberingStyle },
-    { label: 'A, B, C, D, E', value: 'upper-alpha' as OLNumberingStyle },
-    { label: 'i, ii, iii, iv, v', value: 'lower-roman' as OLNumberingStyle },
-    { label: '(1), (2), (3), (4), (5)', value: 'parenthesis' as OLNumberingStyle },
-  ]
 
   const renderStyleControls = (elementName: string, elementKey: keyof DocumentStyle["styles"]) => {
     const elementStyle = editedStyle.styles[elementKey] as any
@@ -450,145 +401,6 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
               </CardContent>
             </Card>
           ))}
-          
-          {/* OL 레벨별 설정 */}
-          {(editedStyle.listCustomization?.olLevels || getDefaultOLLevels()).map((level, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="text-base">OL 레벨 {index + 1}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>넘버링 스타일</Label>
-                    <Select 
-                      value={level.numberingStyle} 
-                      onValueChange={(value) => updateOLLevel(index, 'numberingStyle', value as OLNumberingStyle)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {olNumberingOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>들여쓰기</Label>
-                    <Input
-                      value={level.indentation}
-                      onChange={(e) => updateOLLevel(index, 'indentation', e.target.value)}
-                      placeholder="1rem"
-                    />
-                  </div>
-                  <div>
-                    <Label>마커 간격</Label>
-                    <Input
-                      value={level.markerSpacing || '0.5em'}
-                      onChange={(e) => updateOLLevel(index, 'markerSpacing', e.target.value)}
-                      placeholder="0.5em"
-                    />
-                  </div>
-                  <div>
-                    <Label>폰트 크기</Label>
-                    <Input
-                      value={level.fontSize}
-                      onChange={(e) => updateOLLevel(index, 'fontSize', e.target.value)}
-                      placeholder="1rem"
-                    />
-                  </div>
-                  <div>
-                    <Label>폰트 굵기</Label>
-                    <Input
-                      value={level.fontWeight}
-                      onChange={(e) => updateOLLevel(index, 'fontWeight', e.target.value)}
-                      placeholder="400"
-                    />
-                  </div>
-                  <div>
-                    <Label>폰트 패밀리</Label>
-                    <Select 
-                      value={level.fontFamily} 
-                      onValueChange={(value) => updateOLLevel(index, 'fontFamily', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="폰트를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="inherit">상속</SelectItem>
-                        {fontCategories.map((category) => (
-                          <div key={category.value}>
-                            <div className="px-2 py-1 text-sm font-semibold text-muted-foreground">
-                              {category.label}
-                            </div>
-                            {getFontsByCategory(category.value).map((font) => (
-                              <SelectItem key={font.value} value={font.value}>
-                                <span style={{ fontFamily: font.value }}>{font.name}</span>
-                              </SelectItem>
-                            ))}
-                          </div>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>텍스트 색상</Label>
-                    <ColorPicker
-                      value={level.color}
-                      onChange={(color) => updateOLLevel(index, 'color', color)}
-                    />
-                  </div>
-                  <div>
-                    <Label>배경 색상</Label>
-                    <ColorPicker
-                      value={level.backgroundColor}
-                      onChange={(color) => updateOLLevel(index, 'backgroundColor', color)}
-                    />
-                  </div>
-                  <div>
-                    <Label>패딩</Label>
-                    <Input
-                      value={level.padding}
-                      onChange={(e) => updateOLLevel(index, 'padding', e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`ol-boxStyle-${index}`}
-                      checked={level.boxStyle}
-                      onCheckedChange={(checked) => updateOLLevel(index, 'boxStyle', Boolean(checked))}
-                    />
-                    <Label htmlFor={`ol-boxStyle-${index}`}>박스 스타일 적용</Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {/* OL 공통 설정 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">OL 공통 설정</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>추가 텍스트 (번호 뒤에)</Label>
-                <Input
-                  value={editedStyle.listCustomization?.olMarker || ''}
-                  onChange={(e) => updateListCustomization('olMarker', e.target.value)}
-                  placeholder="비워두면 기본 번호만 표시"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  번호 뒤에 추가할 텍스트 (예: "항목", "번째")
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="code" className="space-y-4 max-h-96 overflow-auto">

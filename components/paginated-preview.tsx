@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
+import React from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import type { DocumentStyle } from "@/lib/default-styles"
-import { extractDepthFromContent, extractOLDepthFromContent, cleanDepthMarkers } from "@/lib/list-depth-parser"
+import { extractDepthFromContent, cleanDepthMarkers } from "@/lib/list-depth-parser"
 import { LinkCard } from "@/components/link-card"
 
 interface PaginatedPreviewProps {
@@ -13,7 +13,6 @@ interface PaginatedPreviewProps {
 }
 
 export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
   // 링크 카드 처리를 위한 함수
   const processContentWithLinkCards = (text: string) => {
     const linkCardRegex = /\[LINK_CARD:(https?:\/\/[^\]]+)\]/g
@@ -54,77 +53,15 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
-  const getDefaultOLLevels = () => [
-    { numberingStyle: 'decimal', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: '#ff0000', backgroundColor: '#ffc0cb', padding: '8px', indentation: '1rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'decimal-dot', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '2rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'lower-alpha', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'lower-roman', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4rem', boxStyle: false, markerSpacing: '0.5em' },
-    { numberingStyle: 'circled', fontSize: '1rem', fontFamily: "'Nanum Gothic', sans-serif", fontWeight: '400', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '5rem', boxStyle: false, markerSpacing: '0.5em' }
-  ]
 
-  // OL 넘버링 스타일을 CSS list-style-type으로 매핑
-  const getListStyleType = (numberingStyle: string): string => {
-    switch (numberingStyle) {
-      case 'decimal': return 'decimal'
-      case 'decimal-dot': return 'decimal'
-      case 'lower-alpha': return 'lower-alpha'
-      case 'upper-alpha': return 'upper-alpha'
-      case 'lower-roman': return 'lower-roman'
-      case 'circled': return 'decimal'
-      case 'parenthesis': return 'decimal'
-      default: return 'decimal'
-    }
-  }
 
-  // 커스텀 넘버링 스타일을 위한 content 생성
-  const getCustomMarkerContent = (numberingStyle: string, counterName: string): string | null => {
-    switch (numberingStyle) {
-      case 'decimal-dot': return `counter(${counterName}) "."`
-      case 'circled': 
-        // circled 숫자는 특별 처리 필요
-        return null // JavaScript에서 처리
-      case 'parenthesis': return `"(" counter(${counterName}) ")"`
-      default: return null
-    }
-  }
-
-  // circled 숫자를 위한 특별 처리
-  const getCircledNumber = (num: number): string => {
-    const circledNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
-    return circledNumbers[num - 1] || `(${num})`
-  }
 
   const ulLevels = style.listCustomization?.ulLevels || getDefaultULLevels()
-  const olLevels = style.listCustomization?.olLevels || getDefaultOLLevels()
   
   // 디버깅: 레벨 설정 확인
   console.log('UL Levels:', ulLevels)
-  console.log('OL Levels:', olLevels)
   console.log('Style listCustomization:', style.listCustomization)
 
-  // circled 숫자 후처리
-  useEffect(() => {
-    if (!containerRef.current) return
-    
-    const processCircledNumbers = () => {
-      olLevels.forEach((level, index) => {
-        if (level.numberingStyle === 'circled') {
-          const nestedSelector = Array(index + 1).fill('ol').join(' ')
-          const items = containerRef.current?.querySelectorAll(`.custom-ol ${nestedSelector} > li`)
-          
-          items?.forEach((item, itemIndex) => {
-            const circledNumber = getCircledNumber(itemIndex + 1)
-            ;(item as HTMLElement).setAttribute('data-circled-number', circledNumber)
-            ;(item as HTMLElement).classList.add('circled-marker')
-          })
-        }
-      })
-    }
-    
-    // DOM이 업데이트된 후 실행
-    const timer = setTimeout(processCircledNumbers, 100)
-    return () => clearTimeout(timer)
-  }, [content, olLevels])
 
   const generateULLevelCSS = (levels: typeof ulLevels) => {
     const ulCSS = levels.map((level, index) => {
@@ -179,71 +116,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     return ulCSS
   }
 
-  const generateOLLevelCSS = (levels: typeof olLevels) => {
-    const olCSS = levels.map((level, index) => {
-      const listStyleType = getListStyleType(level.numberingStyle)
-      const counterName = `ol-counter-${index}`
-      const customContent = getCustomMarkerContent(level.numberingStyle, counterName)
-      const spacing = level.markerSpacing || '0.5em'
-      
-      // 레벨별 중첩 선택자 생성 (ol ol ol... for depth)
-      const nestedSelector = Array(index + 1).fill('ol').join(' ')
-      
-      return `
-      .custom-ol ${nestedSelector} {
-        counter-reset: ${counterName};
-        list-style: none;
-        padding-left: 0;
-        margin-left: ${index === 0 ? '0' : level.indentation};
-      }
-      
-      .custom-ol ${nestedSelector} > li {
-        counter-increment: ${counterName};
-        position: relative;
-        padding-left: calc(2em + ${spacing});
-        font-size: ${level.fontSize};
-        font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
-        font-weight: ${level.fontWeight};
-        color: ${level.color === 'inherit' ? 'inherit' : level.color};
-        background-color: ${level.backgroundColor === 'transparent' ? 'transparent' : level.backgroundColor};
-        ${level.padding !== '0' ? `padding: ${level.padding};` : ''}
-        ${level.boxStyle ? `
-          border: 1px solid #e0e0e0;
-          border-radius: 4px;
-          margin-bottom: 0.5em;
-        ` : ''}
-      }
-      
-      .custom-ol ${nestedSelector} > li::before {
-        content: ${customContent || `counter(${counterName}, ${listStyleType})`};
-        position: absolute;
-        left: 0;
-        top: 0;
-        font-size: ${level.fontSize};
-        font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
-        font-weight: ${level.fontWeight};
-        color: ${level.color === 'inherit' ? 'inherit' : level.color};
-        width: 2em;
-        text-align: right;
-        padding-right: 0.5em;
-      }
-      
-      ${level.numberingStyle === 'circled' ? `
-      .custom-ol ${nestedSelector} > li {
-        list-style: none;
-      }
-      .custom-ol ${nestedSelector} > li::before {
-        content: "";
-      }
-      .custom-ol ${nestedSelector} > li.circled-marker::before {
-        content: attr(data-circled-number);
-      }` : ''}`
-    }).join('\n')
-    
-    console.log('Generated OL CSS:', olCSS)
-    
-    return olCSS
-  }
 
   return (
     <div className="mx-auto bg-white shadow-lg" style={{
@@ -258,10 +130,8 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     }}>
       <style>
         {generateULLevelCSS(ulLevels)}
-        {generateOLLevelCSS(olLevels)}
       </style>
       <div 
-        ref={containerRef}
         style={{ 
           ...style.styles.body, 
           padding: '10mm',
@@ -290,40 +160,36 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                   blockquote: ({ children }) => <blockquote style={style.styles.blockquote}>{children}</blockquote>,
                   ul: ({ children }) => (
                     <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: 0 }} className="custom-ul">
-                      {children}
+                      {React.Children.map(children, (child) => {
+                        return React.isValidElement(child)
+                          ? React.cloneElement(child, { 'data-ul': true })
+                          : child
+                      })}
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol style={style.styles.ol} className="custom-ol">
-                      {children}
+                    <ol style={{ ...style.styles.ol, listStyle: 'decimal' }}>
+                      {React.Children.map(children, (child) => {
+                        return React.isValidElement(child)
+                          ? React.cloneElement(child, { 'data-ol': true })
+                          : child
+                      })}
                     </ol>
                   ),
                   li: ({ children, ...props }) => {
-                    const isOrderedList = props.ordered
+                    const isOrderedList = props['data-ol']
                     if (isOrderedList) {
-                      // OL 아이템 처리 - 단순화됨 (CSS가 모든 스타일 처리)
-                      const cleanedChildren = React.Children.map(children, (child) => {
-                        if (typeof child === 'string') return cleanDepthMarkers(child)
-                        if (React.isValidElement(child)) return React.cloneElement(child, { ...child.props, children: typeof child.props.children === 'string' ? cleanDepthMarkers(child.props.children) : child.props.children })
-                        return child
-                      })
-                      
-                      const additionalText = style.listCustomization?.olMarker || ''
-                      
-                      return (
-                        <li>
-                          {cleanedChildren}
-                          {additionalText && <span style={{ marginLeft: '0.5em' }}>{additionalText}</span>}
-                        </li>
-                      )
+                      return <li style={style.styles.li}>{children}</li>
                     } else {
                       const firstChild = React.Children.toArray(children)[0]
                       let depth = 0
                       if (typeof firstChild === 'string') {
                         depth = extractDepthFromContent(firstChild)
+                        console.log('UL Depth (string):', depth, 'Content:', firstChild)
                       } else if (React.isValidElement(firstChild) && firstChild.props.children) {
                         const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
                         depth = extractDepthFromContent(text)
+                        console.log('UL Depth (element):', depth, 'Text:', text)
                       }
                       const cleanedChildren = React.Children.map(children, (child) => {
                         if (typeof child === 'string') return cleanDepthMarkers(child)

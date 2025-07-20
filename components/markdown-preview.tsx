@@ -4,7 +4,7 @@ import { useRef } from "react"
 import type { DocumentStyle } from "@/lib/default-styles"
 import { addNumberingToMarkdown } from "@/lib/numbering"
 import { detectStandaloneLinks } from "@/lib/markdown-processor"
-import { convertToNestedOL } from "@/lib/list-depth-parser"
+import { parseListDepth } from "@/lib/list-depth-parser"
 import { PaginatedPreview } from "@/components/paginated-preview"
 
 interface MarkdownPreviewProps {
@@ -261,15 +261,14 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
   // 독립적인 링크 감지 및 처리
   const { text: linkProcessedMarkdown } = detectStandaloneLinks(markdown)
   
-  // OL 중첩 구조 변환
-  const nestedOLMarkdown = convertToNestedOL(linkProcessedMarkdown)
-  
   const numberedMarkdown = addNumberingToMarkdown(
-    nestedOLMarkdown,
+    linkProcessedMarkdown,
     style.headingNumbering?.h1 || 'number',
     style.headingNumbering?.h2 || 'korean',
     style.headingNumbering?.h3 || 'parenthesis'
   )
+
+  const finalMarkdown = parseListDepth(numberedMarkdown)
 
   return (
     <div className="h-full flex flex-col">
@@ -290,7 +289,7 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
 
       <div className="flex-1 overflow-auto bg-gray-100 p-4">
         <div ref={printRef}>
-          <PaginatedPreview content={numberedMarkdown} style={style} />
+          <PaginatedPreview content={finalMarkdown} style={style} />
         </div>
       </div>
     </div>
