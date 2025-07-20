@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import type { DocumentStyle } from "@/lib/default-styles"
 import { addNumberingToMarkdown } from "@/lib/numbering"
+import { detectStandaloneLinks } from "@/lib/markdown-processor"
 import { PaginatedPreview } from "@/components/paginated-preview"
 
 interface MarkdownPreviewProps {
@@ -98,8 +99,11 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
     )
   }
 
+  // 독립적인 링크 감지 및 처리
+  const { text: linkProcessedMarkdown } = detectStandaloneLinks(markdown)
+  
   const numberedMarkdown = addNumberingToMarkdown(
-    markdown,
+    linkProcessedMarkdown,
     style.headingNumbering?.h1 || 'number',
     style.headingNumbering?.h2 || 'korean',
     style.headingNumbering?.h3 || 'parenthesis'

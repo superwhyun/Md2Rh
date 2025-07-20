@@ -19,3 +19,39 @@ export function processMarkdownForULDepth(markdown: string): string {
   
   return processedLines.join('\n')
 }
+
+export function detectStandaloneLinks(markdown: string): { text: string, links: string[] } {
+  const lines = markdown.split('\n')
+  const standaloneUrlRegex = /^https?:\/\/[^\s]+$/
+  const markdownLinkRegex = /^\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/
+  const detectedLinks: string[] = []
+  const processedLines: string[] = []
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    
+    // 독립적인 URL 체크
+    if (standaloneUrlRegex.test(trimmedLine)) {
+      detectedLinks.push(trimmedLine)
+      processedLines.push(`[LINK_CARD:${trimmedLine}]`)
+    }
+    // 마크다운 링크 형태 체크 [text](url)
+    else if (markdownLinkRegex.test(trimmedLine)) {
+      const match = trimmedLine.match(markdownLinkRegex)
+      if (match) {
+        const url = match[2]
+        detectedLinks.push(url)
+        processedLines.push(`[LINK_CARD:${url}]`)
+      } else {
+        processedLines.push(line)
+      }
+    } else {
+      processedLines.push(line)
+    }
+  }
+  
+  return {
+    text: processedLines.join('\n'),
+    links: detectedLinks
+  }
+}
