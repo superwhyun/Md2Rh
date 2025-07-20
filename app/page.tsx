@@ -115,7 +115,7 @@ function hello() {
       <div className="flex-1 flex overflow-hidden">
         {/* 왼쪽 사이드바 - 서식 관리자 */}
         {isStyleManagerOpen && (
-          <div className="w-80 border-r bg-background flex-shrink-0 overflow-auto">
+          <div className="w-96 border-r bg-background flex-shrink-0 overflow-auto">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">문서 서식 관리자</h2>
@@ -146,7 +146,7 @@ function hello() {
         )}
 
         {/* 중앙 패널 - 마크다운 에디터 */}
-        <div className={`${isStyleManagerOpen ? 'w-1/2' : 'w-1/2'} border-r flex flex-col overflow-hidden`}>
+        <div className={`${isStyleManagerOpen ? 'flex-1' : 'w-1/2'} border-r flex flex-col overflow-hidden`}>
           <MarkdownEditor 
             value={markdown} 
             onChange={setMarkdown}
@@ -154,7 +154,7 @@ function hello() {
         </div>
 
         {/* 오른쪽 패널 - 미리보기 */}
-        <div className={`${isStyleManagerOpen ? 'w-1/2' : 'w-1/2'} flex flex-col overflow-hidden`}>
+        <div className={`${isStyleManagerOpen ? 'flex-1' : 'w-1/2'} flex flex-col overflow-hidden`}>
           <MarkdownPreview 
             markdown={markdown} 
             style={selectedStyle}

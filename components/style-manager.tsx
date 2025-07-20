@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, Plus, Copy } from "lucide-react"
+import { Trash2, Plus, Copy, Download } from "lucide-react"
 import { type DocumentStyle, createNewStyle } from "@/lib/default-styles"
 import { StyleEditor } from "@/components/style-editor"
 
@@ -32,6 +32,7 @@ export function StyleManager({
 }: StyleManagerProps) {
   const [editingStyle, setEditingStyle] = useState<DocumentStyle | null>(null)
   const [newStyleName, setNewStyleName] = useState("")
+  const [isDragOver, setIsDragOver] = useState(false)
 
   const handleCreateStyle = () => {
     if (!newStyleName.trim()) return
@@ -41,6 +42,67 @@ export function StyleManager({
     onStylesUpdate(updatedStyles)
     onStyleSelect(newStyle.id)
     setNewStyleName("")
+  }
+
+  const handleDownloadStyle = (style: DocumentStyle) => {
+    const dataStr = JSON.stringify(style, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${style.name}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleFileUpload = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result as string
+        const importedStyle = JSON.parse(result) as DocumentStyle
+        
+        // 새 ID 할당하고 이름에 (가져옴) 추가
+        const newStyle = {
+          ...importedStyle,
+          id: Date.now().toString(),
+          name: `${importedStyle.name} (가져옴)`
+        }
+        
+        const updatedStyles = [...styles, newStyle]
+        onStylesUpdate(updatedStyles)
+        onStyleSelect(newStyle.id)
+      } catch (error) {
+        alert('잘못된 JSON 파일입니다.')
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    
+    const files = Array.from(e.dataTransfer.files)
+    const jsonFile = files.find(file => file.type === 'application/json' || file.name.endsWith('.json'))
+    
+    if (jsonFile) {
+      handleFileUpload(jsonFile)
+    } else {
+      alert('JSON 파일만 지원됩니다.')
+    }
   }
 
   const handleDuplicateStyle = (style: DocumentStyle) => {
@@ -86,7 +148,12 @@ export function StyleManager({
         {!editingStyle ? (
           <>
             {/* 새 서식 생성 */}
-            <Card>
+            <Card 
+              className={`transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <CardHeader>
                 <CardTitle className="text-base">새 서식 생성</CardTitle>
               </CardHeader>
@@ -101,6 +168,9 @@ export function StyleManager({
                   <Plus className="h-4 w-4 mr-2" />
                   생성
                 </Button>
+                <div className="text-xs text-muted-foreground text-center border-t pt-2">
+                  또는 JSON 파일을 여기에 드래그하세요
+                </div>
               </CardContent>
             </Card>
 
@@ -139,6 +209,9 @@ export function StyleManager({
                           <Button variant="outline" size="sm" onClick={() => handleDuplicateStyle(style)} className="text-xs h-7">
                             <Copy className="h-3 w-3" />
                           </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDownloadStyle(style)} className="text-xs h-7">
+                            <Download className="h-3 w-3" />
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -173,7 +246,12 @@ export function StyleManager({
         {!editingStyle ? (
           <div className="space-y-4">
             {/* 새 서식 생성 */}
-            <Card>
+            <Card 
+              className={`transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <CardHeader>
                 <CardTitle className="text-lg">새 서식 생성</CardTitle>
               </CardHeader>
@@ -189,6 +267,9 @@ export function StyleManager({
                     <Plus className="h-4 w-4 mr-2" />
                     생성
                   </Button>
+                </div>
+                <div className="text-sm text-muted-foreground text-center border-t pt-3">
+                  또는 JSON 파일을 여기에 드래그하세요
                 </div>
               </CardContent>
             </Card>
@@ -227,6 +308,9 @@ export function StyleManager({
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => handleDuplicateStyle(style)}>
                           <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadStyle(style)}>
+                          <Download className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"

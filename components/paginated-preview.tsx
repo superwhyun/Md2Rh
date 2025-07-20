@@ -58,9 +58,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
 
   const ulLevels = style.listCustomization?.ulLevels || getDefaultULLevels()
   
-  // 디버깅: 레벨 설정 확인
-  console.log('UL Levels:', ulLevels)
-  console.log('Style listCustomization:', style.listCustomization)
 
 
   const generateULLevelCSS = (levels: typeof ulLevels) => {
@@ -79,14 +76,15 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
         font-weight: ${level.fontWeight};
         color: ${level.color === 'inherit' ? 'inherit' : level.color};
         background-color: ${level.backgroundColor === 'transparent' ? 'transparent' : level.backgroundColor};
-        ${level.padding !== '0' ? `padding: ${level.padding};` : ''}
         ${level.boxStyle ? `
           border: 1px solid #e0e0e0;
           border-radius: 4px;
           margin: 2px 0;
-          padding: 4px 8px;
+          padding-top: ${level.padding !== '0' ? level.padding : '4px'};
+          padding-bottom: ${level.padding !== '0' ? level.padding : '4px'};
+          padding-right: 8px;
           background-color: #f9f9f9;
-        ` : ''}
+        ` : level.padding !== '0' ? `padding: ${level.padding};` : ''}
       }
       
       .custom-ul .ul-level-${index}::before {
@@ -109,9 +107,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       }
       ` : ''}
     `}).join('\n')
-    
-    // 디버깅: 생성된 CSS 확인
-    console.log('Generated UL CSS:', ulCSS)
     
     return ulCSS
   }
@@ -185,11 +180,9 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       let depth = 0
                       if (typeof firstChild === 'string') {
                         depth = extractDepthFromContent(firstChild)
-                        console.log('UL Depth (string):', depth, 'Content:', firstChild)
                       } else if (React.isValidElement(firstChild) && firstChild.props.children) {
                         const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
                         depth = extractDepthFromContent(text)
-                        console.log('UL Depth (element):', depth, 'Text:', text)
                       }
                       const cleanedChildren = React.Children.map(children, (child) => {
                         if (typeof child === 'string') return cleanDepthMarkers(child)
@@ -218,7 +211,11 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     </td>
                   ),
                   code: ({ inline, children, ...props }) => {
-                    return inline ? (
+                    // 블록 코드는 보통 pre 태그 안에 들어있거나 여러 줄을 가짐
+                    const content = Array.isArray(children) ? children.join('') : children
+                    const isBlockCode = typeof content === 'string' && content.includes('\n')
+                    
+                    return !isBlockCode ? (
                       <code style={style.styles.code} {...props}>
                         {children}
                       </code>
@@ -230,12 +227,25 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       </div>
                     )
                   },
-                  strong: ({ children }) => <strong style={style.styles.strong}>{children}</strong>,
+                  strong: ({ children }) => <> <strong style={style.styles.strong}>{children}</strong></>,
                   em: ({ children }) => <em style={style.styles.em}>{children}</em>,
                   a: ({ children, href }) => (
                     <a href={href} style={style.styles.a}>
                       {children}
                     </a>
+                  ),
+                  img: ({ src, alt, title }) => (
+                    <img 
+                      src={src} 
+                      alt={alt || ''} 
+                      title={title || alt || ''}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                        margin: '1rem 0',
+                        display: 'block'
+                      }}
+                    />
                   ),
                 }}
               >

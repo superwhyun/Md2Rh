@@ -44,13 +44,15 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
     setEditedStyle((prev) => ({ ...prev, name }))
   }
 
-  const updateHeadingNumbering = (level: 'h1' | 'h2' | 'h3', type: NumberingType) => {
+  const updateHeadingNumbering = (level: 'h1' | 'h2' | 'h3' | 'h4' | 'h5', type: NumberingType) => {
     setEditedStyle((prev) => ({
       ...prev,
       headingNumbering: {
         h1: prev.headingNumbering?.h1 || 'number',
         h2: prev.headingNumbering?.h2 || 'korean',
         h3: prev.headingNumbering?.h3 || 'parenthesis',
+        h4: prev.headingNumbering?.h4 || 'none',
+        h5: prev.headingNumbering?.h5 || 'none',
         [level]: type,
       },
     }))
@@ -91,6 +93,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
     { label: '한글 (가., 나., 다.)', value: 'korean' as NumberingType },
     { label: '괄호 (1), 2), 3))', value: 'parenthesis' as NumberingType },
     { label: '로마숫자 (I., II., III.)', value: 'roman' as NumberingType },
+    { label: '한글 괄호 ((가), (나), (다))', value: 'korean_paren' as NumberingType },
+    { label: '숫자 괄호 ((1), (2), (3))', value: 'number_paren' as NumberingType },
     { label: '없음', value: 'none' as NumberingType },
   ]
 
@@ -211,7 +215,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
           <TabsTrigger value="code">코드</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="headings" className="space-y-4 max-h-96 overflow-auto">
+        <TabsContent value="headings" className="space-y-4 h-full overflow-auto">
           {renderStyleControls("제목 1 (H1)", "h1")}
           {renderStyleControls("제목 2 (H2)", "h2")}
           {renderStyleControls("제목 3 (H3)", "h3")}
@@ -220,7 +224,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
           {renderStyleControls("제목 6 (H6)", "h6")}
         </TabsContent>
 
-        <TabsContent value="numbering" className="space-y-4 max-h-96 overflow-auto">
+        <TabsContent value="numbering" className="space-y-4 h-full overflow-auto">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">제목 자동 넘버링</CardTitle>
@@ -280,11 +284,47 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label>H4 넘버링 형식</Label>
+                <Select 
+                  value={editedStyle.headingNumbering?.h4 || 'none'} 
+                  onValueChange={(value) => updateHeadingNumbering('h4', value as NumberingType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numberingOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>H5 넘버링 형식</Label>
+                <Select 
+                  value={editedStyle.headingNumbering?.h5 || 'none'} 
+                  onValueChange={(value) => updateHeadingNumbering('h5', value as NumberingType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numberingOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="text" className="space-y-4 max-h-96 overflow-auto">
+        <TabsContent value="text" className="space-y-4 h-full overflow-auto">
           {renderStyleControls("본문 (P)", "p")}
           {renderStyleControls("인용문", "blockquote")}
           {renderStyleControls("강조 (Strong)", "strong")}
@@ -292,7 +332,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
           {renderStyleControls("링크 (A)", "a")}
         </TabsContent>
 
-        <TabsContent value="lists" className="space-y-4 max-h-96 overflow-auto">
+        <TabsContent value="lists" className="space-y-4 h-full overflow-auto">
           {/* UL 레벨별 설정 */}
           {(editedStyle.listCustomization?.ulLevels || getDefaultULLevels()).map((level, index) => (
             <Card key={index}>
@@ -403,7 +443,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
           ))}
         </TabsContent>
 
-        <TabsContent value="code" className="space-y-4 max-h-96 overflow-auto">
+        <TabsContent value="code" className="space-y-4 h-full overflow-auto">
           {renderStyleControls("인라인 코드", "code")}
           {renderStyleControls("코드 블록", "pre")}
         </TabsContent>

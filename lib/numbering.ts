@@ -11,6 +11,11 @@ export function getNumberingString(type: NumberingType, index: number): string {
       return `${index + 1}) `
     case 'roman':
       return `${toRoman(index + 1)}. `
+    case 'korean_paren':
+      const koreanParenChars = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하']
+      return `(${koreanParenChars[index % koreanParenChars.length]}) `
+    case 'number_paren':
+      return `(${index + 1}) `
     case 'none':
       return ''
     default:
@@ -50,16 +55,16 @@ export function parseMarkdownHeadings(markdown: string) {
   return headings
 }
 
-export function addNumberingToMarkdown(markdown: string, h1Type: NumberingType, h2Type: NumberingType, h3Type: NumberingType): string {
-  if (h1Type === 'none' && h2Type === 'none' && h3Type === 'none') {
+export function addNumberingToMarkdown(markdown: string, h1Type: NumberingType, h2Type: NumberingType, h3Type: NumberingType, h4Type: NumberingType = 'none', h5Type: NumberingType = 'none'): string {
+  if (h1Type === 'none' && h2Type === 'none' && h3Type === 'none' && h4Type === 'none' && h5Type === 'none') {
     return markdown
   }
 
   const lines = markdown.split('\n')
-  const counters = { h1: 0, h2: 0, h3: 0 }
+  const counters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0 }
   
   return lines.map(line => {
-    const match = line.match(/^(#{1,3})\s+(.+)/)
+    const match = line.match(/^(#{1,5})\s+(.+)/)
     if (match) {
       const level = match[1].length
       const text = match[2]
@@ -68,17 +73,32 @@ export function addNumberingToMarkdown(markdown: string, h1Type: NumberingType, 
         counters.h1++
         counters.h2 = 0
         counters.h3 = 0
+        counters.h4 = 0
+        counters.h5 = 0
         const prefix = getNumberingString(h1Type, counters.h1 - 1)
         return `# ${prefix}${text}`
       } else if (level === 2) {
         counters.h2++
         counters.h3 = 0
+        counters.h4 = 0
+        counters.h5 = 0
         const prefix = getNumberingString(h2Type, counters.h2 - 1)
         return `## ${prefix}${text}`
       } else if (level === 3) {
         counters.h3++
+        counters.h4 = 0
+        counters.h5 = 0
         const prefix = getNumberingString(h3Type, counters.h3 - 1)
         return `### ${prefix}${text}`
+      } else if (level === 4) {
+        counters.h4++
+        counters.h5 = 0
+        const prefix = getNumberingString(h4Type, counters.h4 - 1)
+        return `#### ${prefix}${text}`
+      } else if (level === 5) {
+        counters.h5++
+        const prefix = getNumberingString(h5Type, counters.h5 - 1)
+        return `##### ${prefix}${text}`
       }
     }
     return line

@@ -1,11 +1,13 @@
 import type { CSSProperties } from "react"
 
-export type NumberingType = 'number' | 'korean' | 'parenthesis' | 'roman' | 'none'
+export type NumberingType = 'number' | 'korean' | 'parenthesis' | 'roman' | 'none' | 'korean_paren' | 'number_paren'
 
 export interface HeadingNumbering {
   h1: NumberingType
   h2: NumberingType
   h3: NumberingType
+  h4: NumberingType
+  h5: NumberingType
 }
 
 export interface ULLevelStyle {
@@ -60,7 +62,9 @@ export function getDefaultStyles(): DocumentStyle[] {
       headingNumbering: {
         h1: 'number',
         h2: 'korean',
-        h3: 'parenthesis'
+        h3: 'parenthesis',
+        h4: 'number',
+        h5: 'none'
       },
       listCustomization: {
         ulLevels: [
@@ -190,7 +194,9 @@ export function getDefaultStyles(): DocumentStyle[] {
       headingNumbering: {
         h1: 'roman',
         h2: 'number',
-        h3: 'korean'
+        h3: 'korean',
+        h4: 'parenthesis',
+        h5: 'none'
       },
       listCustomization: {
         ulLevels: [
@@ -317,7 +323,9 @@ export function getDefaultStyles(): DocumentStyle[] {
       headingNumbering: {
         h1: 'number',
         h2: 'number',
-        h3: 'number'
+        h3: 'number',
+        h4: 'number',
+        h5: 'number'
       },
       listCustomization: {
         ulLevels: [
@@ -449,7 +457,9 @@ export function createNewStyle(name: string): DocumentStyle {
     headingNumbering: {
       h1: 'number',
       h2: 'korean',
-      h3: 'parenthesis'
+      h3: 'parenthesis',
+      h4: 'number',
+      h5: 'none'
     },
     listCustomization: {
       ulLevels: [

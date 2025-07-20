@@ -265,7 +265,9 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
     linkProcessedMarkdown,
     style.headingNumbering?.h1 || 'number',
     style.headingNumbering?.h2 || 'korean',
-    style.headingNumbering?.h3 || 'parenthesis'
+    style.headingNumbering?.h3 || 'parenthesis',
+    style.headingNumbering?.h4 || 'none',
+    style.headingNumbering?.h5 || 'none'
   )
 
   const finalMarkdown = parseListDepth(numberedMarkdown)
