@@ -21,7 +21,7 @@ export function parseListDepth(markdown: string): string {
       
       // 탭을 4칸 공백으로 변환하여 일관된 계산
       const normalizedIndent = indentText.replace(/\t/g, '    ')
-      const depth = Math.floor(normalizedIndent.length / 2) // 2칸당 1레벨
+      const depth = Math.floor(normalizedIndent.length / 4) // 4칸당 1레벨
       
       // 특별한 마커로 깊이 정보 포함
       processedLines.push(`${indentText}${marker} [UL_DEPTH_${depth}] ${content}`)
@@ -36,7 +36,7 @@ export function parseListDepth(markdown: string): string {
       const content = olMatch[3]
       
       const normalizedIndent = indentText.replace(/\t/g, '    ')
-      const depth = Math.floor(normalizedIndent.length / 2)
+      const depth = Math.floor(normalizedIndent.length / 4)
       
       processedLines.push(`${indentText}${marker} [OL_DEPTH_${depth}] ${content}`)
       continue

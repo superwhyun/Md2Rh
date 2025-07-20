@@ -77,12 +77,12 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
 
         lines.forEach((line, index) => {
           if (index >= startLine && index <= endLine) {
-            if (line.startsWith("  ")) {
-              // 2개 스페이스 제거
-              const newLine = line.substring(2)
+            if (line.startsWith("    ")) {
+              // 4개 스페이스 제거
+              const newLine = line.substring(4)
               newValue += newLine
-              if (index === startLine) newStart = Math.max(0, start - 2)
-              if (index <= endLine) removedChars += 2
+              if (index === startLine) newStart = Math.max(0, start - 4)
+              if (index <= endLine) removedChars += 4
             } else if (line.startsWith("\t")) {
               // 탭 문자 제거
               const newLine = line.substring(1)
@@ -109,21 +109,21 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
           textarea.selectionEnd = Math.max(newStart, end - removedChars)
         }, 0)
       } else {
-        // Tab: 들여쓰기 추가 (2칸)
+        // Tab: 들여쓰기 추가 (4칸)
         if (start === end) {
           // 커서만 있는 경우
-          const newValue = value.substring(0, start) + "  " + value.substring(end)
+          const newValue = value.substring(0, start) + "    " + value.substring(end)
           onChange(newValue)
 
           // 커서 위치 조정
           setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + 2
+            textarea.selectionStart = textarea.selectionEnd = start + 4
           }, 0)
         } else {
-          // 텍스트가 선택된 경우 - 선택된 모든 줄에 들여쓰기 추가 (2칸)
+          // 텍스트가 선택된 경우 - 선택된 모든 줄에 들여쓰기 추가 (4칸)
           const selectedText = value.substring(start, end)
           const lines = selectedText.split("\n")
-          const indentedLines = lines.map((line) => "  " + line)
+          const indentedLines = lines.map((line) => "    " + line)
           const indentedText = indentedLines.join("\n")
 
           const newValue = value.substring(0, start) + indentedText + value.substring(end)

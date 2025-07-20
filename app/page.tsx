@@ -92,6 +92,11 @@ function hello() {
     localStorage.setItem("documentStyles", JSON.stringify(updatedStyles))
   }
 
+  const handleStyleSelect = (styleId: string) => {
+    setSelectedStyleId(styleId)
+    setTempStyle(null) // 새로운 스타일 선택 시 임시 스타일 초기화
+  }
+
   const selectedStyle = tempStyle || styles.find((style) => style.id === selectedStyleId)
 
   return (
@@ -103,7 +108,7 @@ function hello() {
           문서서식관리자
         </Button>
 
-        <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={setSelectedStyleId} />
+        <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={handleStyleSelect} />
       </div>
 
       {/* 메인 컨텐츠 영역 */}
@@ -132,7 +137,7 @@ function hello() {
                 styles={styles}
                 onStylesUpdate={handleStylesUpdate}
                 selectedStyleId={selectedStyleId}
-                onStyleSelect={setSelectedStyleId}
+                onStyleSelect={handleStyleSelect}
                 isSidebar={true}
                 onTempStyleUpdate={setTempStyle} // 실시간 업데이트를 위한 콜백
               />

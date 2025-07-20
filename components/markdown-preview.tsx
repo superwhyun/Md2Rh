@@ -21,8 +21,8 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
       const styleElement = printRef.current.querySelector('style')
       let customCSS = styleElement ? styleElement.textContent : ''
       
-      // text-indent 스타일이 제대로 전달되도록 수정
-      customCSS = customCSS.replace(/text-indent:\s*-1\.2em/g, 'text-indent: -1.2em !important')
+      // text-indent 스타일이 제대로 전달되도록 수정 (모든 em 값에 대해)
+      customCSS = customCSS.replace(/text-indent:\s*-[\d\.]+em/g, (match) => match + ' !important')
       
       if (contentDiv) {
         const printWindow = window.open('', '_blank')

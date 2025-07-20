@@ -29,12 +29,39 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   console.log('Style listCustomization:', style.listCustomization)
 
   const generateULLevelCSS = (levels: typeof ulLevels) => {
+    // 어떤 레벨이 하위를 포함하는지 체크
+    const parentBoxLevels = levels.map((level, index) => ({
+      index,
+      includesChildren: level.boxStyle && level.includeChildrenInBox
+    }))
+    
     const ulCSS = levels.map((level, index) => {
-      // 마커 너비 추정 (대략적인 계산)
+      // 마커 너비 고정 (대략적인 계산)
       const markerWidth = level.marker.length * 0.6 // em 단위
       const spacing = level.markerSpacing || '0.3em'
-      const spacingValue = parseFloat(spacing.replace('em', '')) || 0.3
-      const totalIndent = markerWidth + spacingValue
+      
+      // 이 레벨이 부모 박스에 포함되는지 확인
+      const isIncludedInParentBox = parentBoxLevels.some(parent => 
+        parent.includesChildren && parent.index < index
+      )
+      
+      // 박스 스타일 결정
+      let boxStyle = ''
+      if (level.boxStyle && !isIncludedInParentBox) {
+        // 독립적인 박스 스타일 또는 부모 박스
+        boxStyle = `
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          margin: 2px 0;
+          padding: 4px 8px;
+        `
+      } else if (isIncludedInParentBox) {
+        // 부모 박스에 포함된 하위 레벨은 박스 없이 약간의 여백만
+        boxStyle = `
+          margin: 1px 0;
+          padding: 2px 4px;
+        `
+      }
       
       return `
       .custom-ul .ul-level-${index}::before {
@@ -50,19 +77,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       
       .custom-ul .ul-level-${index} {
         padding-left: ${level.indentation};
-        text-indent: -${totalIndent}em;
+        text-indent: -${markerWidth}em;
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
         font-weight: ${level.fontWeight};
         color: ${level.color === 'inherit' ? 'inherit' : level.color};
         background-color: ${level.backgroundColor === 'transparent' ? 'transparent' : level.backgroundColor};
         ${level.padding !== '0' ? `padding: ${level.padding};` : ''}
-        ${level.boxStyle ? `
-          border: 1px solid #e0e0e0;
-          border-radius: 4px;
-          margin: 2px 0;
-          padding: 4px 8px;
-        ` : ''}
+        ${boxStyle}
       }
     `}).join('\n')
     

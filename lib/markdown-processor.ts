@@ -9,7 +9,7 @@ export function processMarkdownForULDepth(markdown: string): string {
     if (match) {
       const indentation = match[1]
       const content = match[2]
-      const depth = Math.floor(indentation.length / 2) // 2 spaces = 1 depth level
+      const depth = Math.floor(indentation.length / 4) // 4 spaces = 1 depth level
       
       processedLines.push(`${indentation}- [DEPTH:${depth}] ${content}`)
     } else {
