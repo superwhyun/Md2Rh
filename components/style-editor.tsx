@@ -88,11 +88,11 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
   }
 
   const getDefaultULLevels = (): ULLevelStyle[] => [
-    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false, includeChildrenInBox: false, markerSpacing: '0.3em' },
-    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, includeChildrenInBox: false, markerSpacing: '0.3em' },
-    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false, includeChildrenInBox: false, markerSpacing: '0.3em' },
-    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false, includeChildrenInBox: false, markerSpacing: '0.3em' },
-    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false, includeChildrenInBox: false, markerSpacing: '0.3em' }
+    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
   const numberingOptions = [
@@ -404,17 +404,6 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
                       onCheckedChange={(checked) => updateULLevel(index, 'boxStyle', Boolean(checked))}
                     />
                     <Label htmlFor={`boxStyle-${index}`}>박스 스타일 적용</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`includeChildrenInBox-${index}`}
-                      checked={level.includeChildrenInBox}
-                      onCheckedChange={(checked) => updateULLevel(index, 'includeChildrenInBox', Boolean(checked))}
-                      disabled={!level.boxStyle}
-                    />
-                    <Label htmlFor={`includeChildrenInBox-${index}`} className={!level.boxStyle ? "text-muted-foreground" : ""}>
-                      하위 레벨을 박스에 포함
-                    </Label>
                   </div>
                 </div>
               </CardContent>
