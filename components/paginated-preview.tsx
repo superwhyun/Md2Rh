@@ -15,11 +15,11 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
 
 
   const getDefaultULLevels = () => [
-    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false },
-    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false },
-    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false },
-    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false },
-    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false }
+    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
   const ulLevels = style.listCustomization?.ulLevels || getDefaultULLevels()
@@ -32,13 +32,13 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     const ulCSS = levels.map((level, index) => {
       // 마커 너비 추정 (대략적인 계산)
       const markerWidth = level.marker.length * 0.6 // em 단위
-      const marginRight = 0.5 // em
+      const marginRight = parseFloat(level.markerSpacing || '0.3em') // 사용자 설정 간격 사용
       const totalIndent = markerWidth + marginRight
       
       return `
       ul .ul-level-${index}::before {
         content: "${level.marker}";
-        margin-right: ${marginRight}em;
+        margin-right: ${level.markerSpacing || '0.3em'};
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
         font-weight: ${level.fontWeight};

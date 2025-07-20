@@ -107,8 +107,36 @@ function hello() {
 
       {/* 메인 컨텐츠 영역 */}
       <div className="flex-1 flex overflow-hidden">
-        {/* 왼쪽 패널 - 마크다운 에디터 */}
-        <div className="w-1/2 border-r flex flex-col overflow-hidden">
+        {/* 왼쪽 사이드바 - 서식 관리자 */}
+        {isStyleManagerOpen && (
+          <div className="w-80 border-r bg-background flex-shrink-0 overflow-auto">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">문서 서식 관리자</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsStyleManagerOpen(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </Button>
+              </div>
+              <StyleManager
+                isOpen={true}
+                onClose={() => setIsStyleManagerOpen(false)}
+                styles={styles}
+                onStylesUpdate={handleStylesUpdate}
+                selectedStyleId={selectedStyleId}
+                onStyleSelect={setSelectedStyleId}
+                isSidebar={true}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 중앙 패널 - 마크다운 에디터 */}
+        <div className={`${isStyleManagerOpen ? 'w-1/2' : 'w-1/2'} border-r flex flex-col overflow-hidden`}>
           <MarkdownEditor 
             value={markdown} 
             onChange={setMarkdown}
@@ -116,23 +144,13 @@ function hello() {
         </div>
 
         {/* 오른쪽 패널 - 미리보기 */}
-        <div className="w-1/2 flex flex-col overflow-hidden">
+        <div className={`${isStyleManagerOpen ? 'w-1/2' : 'w-1/2'} flex flex-col overflow-hidden`}>
           <MarkdownPreview 
             markdown={markdown} 
             style={selectedStyle}
           />
         </div>
       </div>
-
-      {/* 스타일 관리자 모달 */}
-      <StyleManager
-        isOpen={isStyleManagerOpen}
-        onClose={() => setIsStyleManagerOpen(false)}
-        styles={styles}
-        onStylesUpdate={handleStylesUpdate}
-        selectedStyleId={selectedStyleId}
-        onStyleSelect={setSelectedStyleId}
-      />
     </div>
   )
 }

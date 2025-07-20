@@ -16,6 +16,7 @@ interface StyleManagerProps {
   onStylesUpdate: (styles: DocumentStyle[]) => void
   selectedStyleId: string
   onStyleSelect: (styleId: string) => void
+  isSidebar?: boolean
 }
 
 export function StyleManager({
@@ -25,6 +26,7 @@ export function StyleManager({
   onStylesUpdate,
   selectedStyleId,
   onStyleSelect,
+  isSidebar = false,
 }: StyleManagerProps) {
   const [editingStyle, setEditingStyle] = useState<DocumentStyle | null>(null)
   const [newStyleName, setNewStyleName] = useState("")
@@ -65,6 +67,89 @@ export function StyleManager({
     const updatedStyles = styles.map((style) => (style.id === updatedStyle.id ? updatedStyle : style))
     onStylesUpdate(updatedStyles)
     setEditingStyle(null)
+  }
+
+  if (isSidebar) {
+    return (
+      <div className="space-y-4">
+        {!editingStyle ? (
+          <>
+            {/* 새 서식 생성 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">새 서식 생성</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input
+                  placeholder="서식 이름"
+                  value={newStyleName}
+                  onChange={(e) => setNewStyleName(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleCreateStyle()}
+                />
+                <Button onClick={handleCreateStyle} disabled={!newStyleName.trim()} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  생성
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* 기존 서식 목록 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">기존 서식</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-96 overflow-auto">
+                  {styles.map((style) => (
+                    <div
+                      key={style.id}
+                      className={`p-3 rounded-lg border ${
+                        selectedStyleId === style.id ? "border-primary bg-primary/5" : "border-border"
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">{style.name}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedStyleId === style.id ? "현재 선택됨" : "클릭하여 선택"}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onStyleSelect(style.id)}
+                            disabled={selectedStyleId === style.id}
+                            className="text-xs h-7"
+                          >
+                            선택
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setEditingStyle(style)} className="text-xs h-7">
+                            편집
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDuplicateStyle(style)} className="text-xs h-7">
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteStyle(style.id)}
+                            disabled={styles.length <= 1}
+                            className="text-xs h-7"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
+        )}
+      </div>
+    )
   }
 
   return (

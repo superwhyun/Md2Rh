@@ -82,11 +82,11 @@ export function StyleEditor({ style, onSave, onCancel }: StyleEditorProps) {
   }
 
   const getDefaultULLevels = (): ULLevelStyle[] => [
-    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false },
-    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false },
-    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false },
-    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false },
-    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false }
+    { marker: '•', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '◦', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▪', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '4.5rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '▫', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '6rem', boxStyle: false, markerSpacing: '0.3em' },
+    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '7.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
   const numberingOptions = [
@@ -310,11 +310,19 @@ export function StyleEditor({ style, onSave, onCancel }: StyleEditorProps) {
                     />
                   </div>
                   <div>
-                    <Label>들여쓰기 (px)</Label>
+                    <Label>들여쓰기</Label>
                     <Input
                       value={level.indentation}
                       onChange={(e) => updateULLevel(index, 'indentation', e.target.value)}
                       placeholder="1.5rem"
+                    />
+                  </div>
+                  <div>
+                    <Label>마커 간격</Label>
+                    <Input
+                      value={level.markerSpacing || '0.3em'}
+                      onChange={(e) => updateULLevel(index, 'markerSpacing', e.target.value)}
+                      placeholder="0.3em"
                     />
                   </div>
                   <div>
