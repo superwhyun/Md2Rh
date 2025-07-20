@@ -32,13 +32,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     const ulCSS = levels.map((level, index) => {
       // 마커 너비 추정 (대략적인 계산)
       const markerWidth = level.marker.length * 0.6 // em 단위
-      const marginRight = parseFloat(level.markerSpacing || '0.3em') // 사용자 설정 간격 사용
-      const totalIndent = markerWidth + marginRight
+      const spacing = level.markerSpacing || '0.3em'
+      const spacingValue = parseFloat(spacing.replace('em', '')) || 0.3
+      const totalIndent = markerWidth + spacingValue
       
       return `
-      ul .ul-level-${index}::before {
+      .custom-ul .ul-level-${index}::before {
         content: "${level.marker}";
-        margin-right: ${level.markerSpacing || '0.3em'};
+        margin-right: ${spacing};
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
         font-weight: ${level.fontWeight};
@@ -47,7 +48,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
         width: ${markerWidth}em;
       }
       
-      ul .ul-level-${index} {
+      .custom-ul .ul-level-${index} {
         padding-left: ${level.indentation};
         text-indent: -${totalIndent}em;
         font-size: ${level.fontSize};

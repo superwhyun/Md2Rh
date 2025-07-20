@@ -17,6 +17,7 @@ interface StyleManagerProps {
   selectedStyleId: string
   onStyleSelect: (styleId: string) => void
   isSidebar?: boolean
+  onTempStyleUpdate?: (style: DocumentStyle | null) => void
 }
 
 export function StyleManager({
@@ -27,6 +28,7 @@ export function StyleManager({
   selectedStyleId,
   onStyleSelect,
   isSidebar = false,
+  onTempStyleUpdate,
 }: StyleManagerProps) {
   const [editingStyle, setEditingStyle] = useState<DocumentStyle | null>(null)
   const [newStyleName, setNewStyleName] = useState("")
@@ -66,7 +68,16 @@ export function StyleManager({
   const handleStyleUpdate = (updatedStyle: DocumentStyle) => {
     const updatedStyles = styles.map((style) => (style.id === updatedStyle.id ? updatedStyle : style))
     onStylesUpdate(updatedStyles)
+  }
+
+  const handleTempStyleUpdate = (updatedStyle: DocumentStyle) => {
+    // 임시 업데이트만 전송 (실제 저장은 하지 않음)
+    onTempStyleUpdate?.(updatedStyle)
+  }
+
+  const handleEditCancel = () => {
     setEditingStyle(null)
+    onTempStyleUpdate?.(null) // 취소 시 임시 스타일 초기화
   }
 
   if (isSidebar) {
@@ -146,7 +157,7 @@ export function StyleManager({
             </Card>
           </>
         ) : (
-          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} onTempUpdate={handleTempStyleUpdate} />
         )}
       </div>
     )
@@ -233,7 +244,7 @@ export function StyleManager({
             </Card>
           </div>
         ) : (
-          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} />
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} onTempUpdate={handleTempStyleUpdate} />
         )}
       </DialogContent>
     </Dialog>

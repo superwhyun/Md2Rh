@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,10 +16,16 @@ interface StyleEditorProps {
   style: DocumentStyle
   onSave: (style: DocumentStyle) => void
   onCancel: () => void
+  onTempUpdate?: (style: DocumentStyle) => void
 }
 
-export function StyleEditor({ style, onSave, onCancel }: StyleEditorProps) {
+export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEditorProps) {
   const [editedStyle, setEditedStyle] = useState<DocumentStyle>(JSON.parse(JSON.stringify(style)))
+
+  // 스타일이 변경될 때마다 실시간으로 임시 업데이트 전송
+  useEffect(() => {
+    onTempUpdate?.(editedStyle)
+  }, [editedStyle])
 
   const updateElementStyle = (element: keyof DocumentStyle["styles"], property: string, value: string) => {
     setEditedStyle((prev) => ({
@@ -196,9 +202,11 @@ export function StyleEditor({ style, onSave, onCancel }: StyleEditorProps) {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>
-            취소
+            돌아가기
           </Button>
-          <Button onClick={() => onSave(editedStyle)}>저장</Button>
+          <Button onClick={() => onSave(editedStyle)}>
+            저장
+          </Button>
         </div>
       </div>
 

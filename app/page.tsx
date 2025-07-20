@@ -67,6 +67,7 @@ function hello() {
   const [styles, setStyles] = useState<DocumentStyle[]>([])
   const [selectedStyleId, setSelectedStyleId] = useState<string>("")
   const [isStyleManagerOpen, setIsStyleManagerOpen] = useState(false)
+  const [tempStyle, setTempStyle] = useState<DocumentStyle | null>(null) // 실시간 편집을 위한 임시 스타일
 
   useEffect(() => {
     // 로컬스토리지에서 저장된 스타일 불러오기
@@ -91,7 +92,7 @@ function hello() {
     localStorage.setItem("documentStyles", JSON.stringify(updatedStyles))
   }
 
-  const selectedStyle = styles.find((style) => style.id === selectedStyleId)
+  const selectedStyle = tempStyle || styles.find((style) => style.id === selectedStyleId)
 
   return (
     <div className="h-screen flex flex-col">
@@ -124,12 +125,16 @@ function hello() {
               </div>
               <StyleManager
                 isOpen={true}
-                onClose={() => setIsStyleManagerOpen(false)}
+                onClose={() => {
+                  setIsStyleManagerOpen(false)
+                  setTempStyle(null) // 사이드바 닫을 때 임시 스타일 초기화
+                }}
                 styles={styles}
                 onStylesUpdate={handleStylesUpdate}
                 selectedStyleId={selectedStyleId}
                 onStyleSelect={setSelectedStyleId}
                 isSidebar={true}
+                onTempStyleUpdate={setTempStyle} // 실시간 업데이트를 위한 콜백
               />
             </div>
           </div>
