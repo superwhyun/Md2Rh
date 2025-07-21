@@ -13,15 +13,50 @@ interface PaginatedPreviewProps {
 }
 
 export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
+  if (!style) {
+    return <div>Loading...</div>
+  }
   // 링크 카드 처리를 위한 함수
   const processContentWithLinkCards = (text: string) => {
+    console.log('Processing content:', text)
+    
+    // 링크 카드와 blob 이미지 모두 처리
     const linkCardRegex = /\[LINK_CARD:(https?:\/\/[^\]]+)\]/g
+    const blobImageRegex = /!\[([^\]]*)\]\((blob:[^)]+)\)/g
+    
     const parts = []
     let lastIndex = 0
-    let match
     
+    // 모든 매치를 찾아서 위치순으로 정렬
+    const allMatches = []
+    
+    let match
     while ((match = linkCardRegex.exec(text)) !== null) {
-      // 링크 카드 앞의 일반 텍스트 추가
+      allMatches.push({
+        type: 'linkCard',
+        index: match.index,
+        length: match[0].length,
+        content: match[1]
+      })
+    }
+    
+    // blob 이미지 매치 추가
+    while ((match = blobImageRegex.exec(text)) !== null) {
+      allMatches.push({
+        type: 'blobImage',
+        index: match.index,
+        length: match[0].length,
+        alt: match[1],
+        src: match[2]
+      })
+    }
+    
+    // 위치순으로 정렬
+    allMatches.sort((a, b) => a.index - b.index)
+    
+    // 순서대로 처리
+    for (const match of allMatches) {
+      // 이전 텍스트 추가
       if (match.index > lastIndex) {
         const beforeText = text.slice(lastIndex, match.index).trim()
         if (beforeText) {
@@ -29,9 +64,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
         }
       }
       
-      // 링크 카드 추가
-      parts.push({ type: 'linkCard', content: match[1] })
-      lastIndex = match.index + match[0].length
+      // 매치된 항목 추가
+      if (match.type === 'linkCard') {
+        parts.push({ type: 'linkCard', content: match.content })
+      } else if (match.type === 'blobImage') {
+        parts.push({ type: 'blobImage', alt: match.alt, src: match.src })
+      }
+      
+      lastIndex = match.index + match.length
     }
     
     // 마지막 남은 텍스트 추가
@@ -42,7 +82,9 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       }
     }
     
-    return parts.length > 0 ? parts : [{ type: 'markdown', content: text }]
+    const result = parts.length > 0 ? parts : [{ type: 'markdown', content: text }]
+    console.log('Processed parts:', result)
+    return result
   }
 
   const getDefaultULLevels = () => [
@@ -53,10 +95,19 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
   ]
 
+  const getDefaultOLLevels = () => [
+    { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
+    { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
+  ]
+
 
 
 
   const ulLevels = style.listCustomization?.ulLevels || getDefaultULLevels()
+  const olLevels = style.listCustomization?.olLevels || getDefaultOLLevels()
   
 
 
@@ -111,6 +162,42 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     return ulCSS
   }
 
+  const generateOLLevelCSS = (levels: typeof olLevels) => {
+    const olCSS = levels.map((level, index) => {
+      const spacing = level.numberSpacing || '0.3em'
+      
+      return `
+      .custom-ol .ol-level-${index} {
+        position: relative;
+        margin-left: ${level.indentation};
+        padding-left: ${spacing};
+        font-size: ${level.fontSize};
+        font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
+        font-weight: ${level.fontWeight};
+        color: ${level.color === 'inherit' ? 'inherit' : level.color};
+        background-color: ${level.backgroundColor === 'transparent' ? 'transparent' : level.backgroundColor};
+        ${level.boxStyle ? `
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          margin: 2px 0;
+          padding-top: ${level.padding !== '0' ? level.padding : '4px'};
+          padding-bottom: ${level.padding !== '0' ? level.padding : '4px'};
+          padding-right: 8px;
+          background-color: #f9f9f9;
+        ` : level.padding !== '0' ? `padding: ${level.padding};` : ''}
+      }
+      
+      ${level.boxStyle ? `
+      .custom-ol .ol-level-${index} ol {
+        margin-left: -8px;
+        margin-top: 4px;
+        position: relative;
+      }
+      ` : ''}
+    `}).join('\n')
+    
+    return olCSS
+  }
 
   return (
     <div className="mx-auto bg-white shadow-lg" style={{
@@ -125,6 +212,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     }}>
       <style>
         {generateULLevelCSS(ulLevels)}
+        {generateOLLevelCSS(olLevels)}
       </style>
       <div 
         style={{ 
@@ -139,12 +227,33 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
 {processContentWithLinkCards(content).map((part, index) => {
           if (part.type === 'linkCard') {
             return <LinkCard key={index} url={part.content} />
+          } else if (part.type === 'blobImage') {
+            return (
+              <img 
+                key={index}
+                src={part.src} 
+                alt={part.alt || ''} 
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  margin: '1rem 0',
+                  display: 'block'
+                }}
+                onError={(e) => console.error('Blob image load error:', part.src, e)}
+                onLoad={() => console.log('Blob image loaded successfully:', part.src)}
+              />
+            )
           } else {
             return (
               <ReactMarkdown
                 key={index}
                 remarkPlugins={[remarkGfm]}
                 components={{
+                  // 모든 컴포넌트 로그 추가
+                  p: ({ children }) => {
+                    console.log('Paragraph children:', children)
+                    return <p style={style.styles.p}>{children}</p>
+                  },
                   h1: ({ children }) => <h1 style={style.styles.h1}>{children}</h1>,
                   h2: ({ children }) => <h2 style={style.styles.h2}>{children}</h2>,
                   h3: ({ children }) => <h3 style={style.styles.h3}>{children}</h3>,
@@ -163,7 +272,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol style={{ ...style.styles.ol, listStyle: 'decimal' }}>
+                    <ol style={{ ...style.styles.ol, listStyle: 'decimal' }} className="custom-ol">
                       {React.Children.map(children, (child) => {
                         return React.isValidElement(child)
                           ? React.cloneElement(child, { 'data-ol': true })
@@ -174,7 +283,20 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                   li: ({ children, ...props }) => {
                     const isOrderedList = props['data-ol']
                     if (isOrderedList) {
-                      return <li style={style.styles.li}>{children}</li>
+                      const firstChild = React.Children.toArray(children)[0]
+                      let depth = 0
+                      if (typeof firstChild === 'string') {
+                        depth = extractDepthFromContent(firstChild)
+                      } else if (React.isValidElement(firstChild) && firstChild.props.children) {
+                        const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
+                        depth = extractDepthFromContent(text)
+                      }
+                      const cleanedChildren = React.Children.map(children, (child) => {
+                        if (typeof child === 'string') return cleanDepthMarkers(child)
+                        if (React.isValidElement(child)) return React.cloneElement(child, { ...child.props, children: typeof child.props.children === 'string' ? cleanDepthMarkers(child.props.children) : child.props.children })
+                        return child
+                      })
+                      return <li style={style.styles.li} className={`ol-level-${depth}`}>{cleanedChildren}</li>
                     } else {
                       const firstChild = React.Children.toArray(children)[0]
                       let depth = 0
@@ -234,19 +356,41 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       {children}
                     </a>
                   ),
-                  img: ({ src, alt, title }) => (
-                    <img 
-                      src={src} 
-                      alt={alt || ''} 
-                      title={title || alt || ''}
-                      style={{
-                        maxWidth: '100%',
-                        height: 'auto',
-                        margin: '1rem 0',
-                        display: 'block'
-                      }}
-                    />
-                  ),
+                  img: ({ src, alt, title }) => {
+                    console.log('Image src:', src, 'Type:', typeof src)
+                    
+                    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+                      console.error('Image load error for src:', src)
+                      console.error('Error event:', e)
+                      const img = e.target as HTMLImageElement
+                      img.style.border = '2px dashed #ccc'
+                      img.style.padding = '20px'
+                      img.style.background = '#f5f5f5'
+                      img.alt = `[이미지 로드 실패: ${alt || src}]`
+                    }
+
+                    const handleImageLoad = () => {
+                      console.log('Image loaded successfully:', src)
+                    }
+
+                    return (
+                      <img 
+                        src={src} 
+                        alt={alt || ''} 
+                        title={title || alt || ''}
+                        onError={handleImageError}
+                        onLoad={handleImageLoad}
+                        crossOrigin="anonymous"
+                        referrerPolicy="no-referrer"
+                        style={{
+                          maxWidth: '100%',
+                          height: 'auto',
+                          margin: '1rem 0',
+                          display: 'block'
+                        }}
+                      />
+                    )
+                  },
                 }}
               >
                 {part.content}

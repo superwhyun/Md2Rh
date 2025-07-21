@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import type { DocumentStyle } from "@/lib/default-styles"
 import { addNumberingToMarkdown } from "@/lib/numbering"
 import { detectStandaloneLinks } from "@/lib/markdown-processor"
@@ -10,15 +10,76 @@ import { PaginatedPreview } from "@/components/paginated-preview"
 interface MarkdownPreviewProps {
   markdown: string
   style?: DocumentStyle
+  title?: string
 }
 
-export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
+export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps) {
+  const renderTitlePage = () => {
+    if (!title?.trim()) return null
+    
+    const today = new Date().toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    
+    return (
+      <div className="mx-auto bg-white shadow-lg" style={{
+        width: '210mm',
+        height: '297mm',
+        maxWidth: '100%',
+        padding: '0',
+        boxSizing: 'border-box',
+        transform: 'scale(0.8)',
+        transformOrigin: 'top center',
+        position: 'relative',
+        marginBottom: '20px'
+      }}>
+        <div style={{
+          ...style?.styles.body,
+          padding: '10mm',
+          border: '1px dashed #ccc',
+          margin: '10mm',
+          height: 'calc(297mm - 20mm)',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          paddingTop: '15%'
+        }}>
+          <h1 style={{
+            ...style?.styles.h1,
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            marginBottom: '0',
+            lineHeight: '1.1',
+            flex: 'none'
+          }}>
+            {title}
+          </h1>
+          <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+            <p style={{
+              ...style?.styles.p,
+              fontSize: '1.5rem',
+              color: '#666',
+              margin: '0'
+            }}>
+              {today}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
   const printRef = useRef<HTMLDivElement>(null)
+  const [isPrinting, setIsPrinting] = useState(false)
 
   const handlePrint = async () => {
-    if (printRef.current) {
-      // 렌더링 영역에서 본문 내용만 추출 (여백 제외)
-      const contentDiv = printRef.current.querySelector('div[style*="padding: 10mm"]')
+    if (printRef.current && !isPrinting) {
+      setIsPrinting(true)
+      // 전체 프린트 영역 추출 (타이틀 페이지 + 본문 모두 포함)
+      const allContent = printRef.current
       
       // 현재 페이지의 모든 스타일 추출
       const styleElement = printRef.current.querySelector('style')
@@ -44,20 +105,18 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
         console.warn('Error extracting stylesheets:', e)
       }
 
-      // 이미지를 Base64로 변환하는 함수 (CORS 우회 방법 추가)
-      const convertImagesToBase64 = async (htmlContent: string): Promise<string> => {
+      // Blob URL만 Base64로 변환하는 함수 (외부 URL은 그대로 유지)
+      const convertBlobImagesToBase64 = async (htmlContent: string): Promise<string> => {
         const tempDiv = document.createElement('div')
         tempDiv.innerHTML = htmlContent
         const images = tempDiv.querySelectorAll('img')
         
         const promises = Array.from(images).map(async (img) => {
           try {
-            if (img.src && img.src.startsWith('http')) {
-              // 방법 1: 프록시 서비스 사용
-              const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(img.src)}`
-              
+            if (img.src && img.src.startsWith('blob:')) {
+              // Blob URL만 Base64로 변환 (로컬 파일이므로 빠름)
               try {
-                const response = await fetch(proxyUrl)
+                const response = await fetch(img.src)
                 const blob = await response.blob()
                 const dataURL = await new Promise<string>((resolve) => {
                   const reader = new FileReader()
@@ -65,35 +124,14 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
                   reader.readAsDataURL(blob)
                 })
                 img.src = dataURL
-              } catch (proxyError) {
-                console.warn('Proxy conversion failed, trying direct method:', proxyError)
-                
-                // 방법 2: 직접 변환 시도
-                const canvas = document.createElement('canvas')
-                const ctx = canvas.getContext('2d')
-                const newImg = new Image()
-                
-                await new Promise<void>((resolve) => {
-                  newImg.onload = () => {
-                    canvas.width = newImg.width
-                    canvas.height = newImg.height
-                    ctx?.drawImage(newImg, 0, 0)
-                    try {
-                      const dataURL = canvas.toDataURL('image/png')
-                      img.src = dataURL
-                    } catch (e) {
-                      console.warn('Canvas conversion failed:', e)
-                    }
-                    resolve()
-                  }
-                  newImg.onerror = () => {
-                    console.warn('Image load failed:', img.src)
-                    resolve()
-                  }
-                  newImg.crossOrigin = 'anonymous'
-                  newImg.src = img.src
-                })
+                console.log('Blob URL converted to Base64 for print')
+              } catch (blobError) {
+                console.warn('Blob URL conversion failed:', blobError)
               }
+            } else if (img.src && img.src.startsWith('http')) {
+              // 외부 URL은 그대로 두고 프린트 시 브라우저가 처리하도록 함
+              console.log('External URL kept as-is for print:', img.src)
+              // 변환하지 않고 그대로 유지
             }
           } catch (e) {
             console.warn('Image conversion error:', e)
@@ -107,9 +145,9 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
       // text-indent 스타일이 제대로 전달되도록 수정 (모든 em 값에 대해)
       customCSS = customCSS.replace(/text-indent:\s*-[\d\.]+em/g, (match) => match + ' !important')
       
-      if (contentDiv) {
-        // 이미지를 Base64로 변환
-        const convertedContent = await convertImagesToBase64(contentDiv.innerHTML)
+      if (allContent) {
+        // Blob URL만 Base64로 변환
+        const convertedContent = await convertBlobImagesToBase64(allContent.innerHTML)
         
         const printWindow = window.open('', '_blank')
         if (printWindow) {
@@ -121,12 +159,63 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
                 <style>
                   @page {
                     size: A4;
-                    margin: 10mm;
+                    margin: 15mm;
                   }
                   body {
                     margin: 0;
                     padding: 0;
                     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                  }
+                  
+                  /* 페이지별 스타일 */
+                  .mx-auto {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    width: 100% !important;
+                    min-height: 100% !important;
+                    transform: none !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                  }
+                  
+                  /* 타이틀 페이지만 page-break 적용 */
+                  .mx-auto:first-child {
+                    page-break-after: always;
+                  }
+                  
+                  /* 내용 페이지는 page-break 없음 */
+                  .mx-auto:last-child {
+                    page-break-after: auto !important;
+                  }
+                  
+                  /* 내부 컨텐츠 영역 */
+                  .mx-auto > div {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    border: none !important;
+                    min-height: auto !important;
+                  }
+                  
+                  /* 타이틀 페이지 레이아웃 강제 유지 */
+                  .mx-auto:first-child > div {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    text-align: center !important;
+                    padding-top: 15% !important;
+                    height: 100% !important;
+                    min-height: 100% !important;
+                  }
+                  
+                  .mx-auto:first-child h1 {
+                    flex: none !important;
+                    margin-bottom: 0 !important;
+                  }
+                  
+                  .mx-auto:first-child > div > div {
+                    flex: 1 !important;
+                    display: flex !important;
+                    align-items: center !important;
                   }
                   @media print {
                     body {
@@ -242,11 +331,39 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
             </html>
           `)
           printWindow.document.close()
-          printWindow.focus()
-          printWindow.print()
-          printWindow.close()
+          
+          // 이미지 로딩 완료를 기다린 후 프린트
+          const images = printWindow.document.querySelectorAll('img')
+          const imagePromises = Array.from(images).map(img => {
+            return new Promise<void>((resolve) => {
+              if (img.complete) {
+                resolve()
+              } else {
+                img.onload = () => resolve()
+                img.onerror = () => resolve() // 에러도 완료로 처리
+                // 타임아웃 설정 (5초 후 강제 진행)
+                setTimeout(() => resolve(), 5000)
+              }
+            })
+          })
+          
+          console.log(`Waiting for ${images.length} images to load...`)
+          
+          // 모든 이미지 로딩 완료 후 프린트
+          Promise.all(imagePromises).then(() => {
+            console.log('All images loaded, starting print...')
+            printWindow.focus()
+            
+            // 조금 더 대기 후 프린트 (렌더링 완료 보장)
+            setTimeout(() => {
+              printWindow.print()
+              printWindow.close()
+            }, 500)
+          })
         }
       }
+      
+      setIsPrinting(false)
     }
   }
 
@@ -282,15 +399,17 @@ export function MarkdownPreview({ markdown, style }: MarkdownPreviewProps) {
           </div>
           <button
             onClick={handlePrint}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            disabled={isPrinting}
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
           >
-            프린트 하기
+            {isPrinting ? '프린트 준비 중...' : '프린트 하기'}
           </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto bg-gray-100 p-4">
         <div ref={printRef}>
+          {renderTitlePage()}
           <PaginatedPreview content={finalMarkdown} style={style} />
         </div>
       </div>

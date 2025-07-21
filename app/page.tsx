@@ -10,6 +10,7 @@ import { Settings } from "lucide-react"
 import { type DocumentStyle, getDefaultStyles } from "@/lib/default-styles"
 
 export default function Home() {
+  const [title, setTitle] = useState("")
   const [markdown, setMarkdown] = useState(`# 마크다운 문서 예제
 
 이것은 **마크다운 문서 생성기**입니다.
@@ -19,6 +20,7 @@ export default function Home() {
 - 실시간 미리보기
 - 커스텀 서식 관리
 - 드래그앤드롭 파일 업로드
+- 이미지 드래그앤드롭 지원
 
 ### 코드 예제
 
@@ -30,38 +32,19 @@ function hello() {
 
 > 이것은 인용문입니다.
 
-1. 첫 번째 항목
-2. 두 번째 항목
-3. 세 번째 항목
-
-- 불릿 포인트 1
-- 불릿 포인트 2
-- 불릿 포인트 3
-이것은 **마크다운 문서 생성기**입니다.
-
-## 주요 기능
-
-- 실시간 미리보기
-- 커스텀 서식 관리
-- 드래그앤드롭 파일 업로드
-
-### 코드 예제
-
-\`\`\`javascript
-function hello() {
-  console.log("Hello, World!");
-}
-\`\`\`
-
-> 이것은 인용문입니다.
+### 순서있는 목록
 
 1. 첫 번째 항목
 2. 두 번째 항목
 3. 세 번째 항목
 
+### 순서없는 목록
+
 - 불릿 포인트 1
 - 불릿 포인트 2
 - 불릿 포인트 3
+
+**이제 마크다운을 편집하여 문서를 작성해보세요!**
 `)
 
   const [styles, setStyles] = useState<DocumentStyle[]>([])
@@ -150,6 +133,8 @@ function hello() {
           <MarkdownEditor 
             value={markdown} 
             onChange={setMarkdown}
+            title={title}
+            onTitleChange={setTitle}
           />
         </div>
 
@@ -158,6 +143,7 @@ function hello() {
           <MarkdownPreview 
             markdown={markdown} 
             style={selectedStyle}
+            title={title}
           />
         </div>
       </div>
