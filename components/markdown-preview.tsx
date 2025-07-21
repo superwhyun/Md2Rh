@@ -85,6 +85,9 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
       const styleElement = printRef.current.querySelector('style')
       let customCSS = styleElement ? styleElement.textContent : ''
       
+      // 타이틀 유무 확인
+      const hasTitle = !!title?.trim()
+      
       // 페이지의 모든 CSS 스타일시트 추출
       const allStylesheets = Array.from(document.styleSheets)
       let additionalCSS = ''
@@ -178,7 +181,8 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     border: none !important;
                   }
                   
-                  /* 타이틀 페이지만 page-break 적용 */
+                  ${hasTitle ? `
+                  /* 타이틀이 있을 때: 타이틀 페이지만 page-break 적용 */
                   .mx-auto:first-child {
                     page-break-after: always;
                   }
@@ -188,15 +192,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     page-break-after: auto !important;
                   }
                   
-                  /* 내부 컨텐츠 영역 */
-                  .mx-auto > div {
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    border: none !important;
-                    min-height: auto !important;
-                  }
-                  
-                  /* 타이틀 페이지 레이아웃 강제 유지 */
+                  /* 타이틀 페이지 레이아웃만 강제 유지 */
                   .mx-auto:first-child > div {
                     display: flex !important;
                     flex-direction: column !important;
@@ -205,6 +201,13 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     padding-top: 15% !important;
                     height: 100% !important;
                     min-height: 100% !important;
+                  }
+                  
+                  /* 내용 페이지는 기본 정렬로 복원 */
+                  .mx-auto:last-child > div {
+                    text-align: left !important;
+                    align-items: flex-start !important;
+                    padding-top: 0 !important;
                   }
                   
                   .mx-auto:first-child h1 {
@@ -216,6 +219,20 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     flex: 1 !important;
                     display: flex !important;
                     align-items: center !important;
+                  }
+                  ` : `
+                  /* 타이틀이 없을 때: 내용 페이지만 존재 */
+                  .mx-auto {
+                    page-break-after: auto !important;
+                  }
+                  `}
+                  
+                  /* 공통 내부 컨텐츠 영역 */
+                  .mx-auto > div {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    border: none !important;
+                    min-height: auto !important;
                   }
                   @media print {
                     body {
