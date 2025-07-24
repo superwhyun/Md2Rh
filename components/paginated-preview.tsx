@@ -263,7 +263,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                   p: ({ children }) => <p style={style.styles.p}>{children}</p>,
                   blockquote: ({ children }) => <blockquote style={style.styles.blockquote}>{children}</blockquote>,
                   ul: ({ children }) => (
-                    <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: 0 }} className="custom-ul">
+                    <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: 0, marginBottom: '1rem' }} className="custom-ul">
                       {React.Children.map(children, (child) => {
                         return React.isValidElement(child)
                           ? React.cloneElement(child, { 'data-ul': true })
