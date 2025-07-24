@@ -1,5 +1,12 @@
 import type { CSSProperties } from "react"
 
+// Import JSON files directly
+import modernStyle from './styles/modern.json'
+import classicStyle from './styles/classic.json'
+import minimalStyle from './styles/minimal.json'
+import cleanStyle from './styles/clean.json'
+import korGovStyle from './styles/KorGov.json'
+
 export type NumberingType = 'number' | 'korean' | 'parenthesis' | 'roman' | 'none' | 'korean_paren' | 'number_paren'
 
 export interface HeadingNumbering {
@@ -34,6 +41,7 @@ export interface OLLevelStyle {
   indentation: string
   boxStyle: boolean
   numberSpacing: string
+  bottomMargin: string
 }
 
 
@@ -70,541 +78,71 @@ export interface DocumentStyle {
 
 export function getDefaultStyles(): DocumentStyle[] {
   return [
-    {
-      id: "modern",
-      name: "모던 스타일",
-      headingNumbering: {
-        h1: 'number',
-        h2: 'korean',
-        h3: 'parenthesis',
-        h4: 'number',
-        h5: 'none'
-      },
-      listCustomization: {
-        ulLevels: [
-          { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em', bottomMargin: '1rem' },
-          { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em', bottomMargin: '1rem' }
-        ],
-        olLevels: [
-          { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
-        ]
-      },
-      styles: {
-        body: {
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-          lineHeight: "1.6",
-          color: "#1a1a1a",
-          backgroundColor: "#ffffff",
-        },
-        h1: {
-          fontSize: "2.5rem",
-          fontWeight: "700",
-          color: "#1a1a1a",
-          marginTop: "2rem",
-          marginBottom: "1rem",
-          lineHeight: "1.2",
-        },
-        h2: {
-          fontSize: "2rem",
-          fontWeight: "600",
-          color: "#2d2d2d",
-          marginTop: "1.5rem",
-          marginBottom: "0.75rem",
-          lineHeight: "1.3",
-        },
-        h3: {
-          fontSize: "1.5rem",
-          fontWeight: "600",
-          color: "#404040",
-          marginTop: "1.25rem",
-          marginBottom: "0.5rem",
-          lineHeight: "1.4",
-        },
-        h4: {
-          fontSize: "1.25rem",
-          fontWeight: "500",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        h5: {
-          fontSize: "1.125rem",
-          fontWeight: "500",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        h6: {
-          fontSize: "1rem",
-          fontWeight: "500",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        p: {
-          fontSize: "1rem",
-          lineHeight: "1.7",
-          marginBottom: "1rem",
-          color: "#374151",
-        },
-        blockquote: {
-          borderLeft: "4px solid #e5e7eb",
-          paddingLeft: "1rem",
-          margin: "1.5rem 0",
-          fontStyle: "italic",
-          color: "#6b7280",
-          backgroundColor: "#f9fafb",
-          padding: "1rem",
-        },
-        ul: {
-          marginBottom: "1rem",
-          paddingLeft: "1.5rem",
-        },
-        ol: {
-          fontFamily: "'Nanum Gothic', sans-serif",
-          fontSize: "16px",
-          fontWeight: "400",
-          color: "#000000 !important",
-          backgroundColor: "#ffffff !important",
-          marginTop: "16px",
-          marginBottom: "16px",
-          padding: "8px"
-        },
-        li: {},
-        code: {
-          backgroundColor: "#f3f4f6",
-          padding: "0.25rem 0.5rem",
-          borderRadius: "0.25rem",
-          fontSize: "0.875rem",
-          fontFamily: "'Fira Code', 'Monaco', monospace",
-          color: "#dc2626",
-        },
-        pre: {
-          backgroundColor: "#1f2937",
-          color: "#f9fafb",
-          padding: "1rem",
-          borderRadius: "0.5rem",
-          marginBottom: "1rem",
-          overflow: "auto",
-        },
-        strong: {
-          fontWeight: "700",
-          color: "#1a1a1a",
-        },
-        em: {
-          fontStyle: "italic",
-          color: "#4b5563",
-        },
-        a: {
-          color: "#3b82f6",
-          textDecoration: "underline",
-          textDecorationColor: "#93c5fd",
-        },
-      },
-    },
-    {
-      id: "classic",
-      name: "클래식 스타일",
-      headingNumbering: {
-        h1: 'roman',
-        h2: 'number',
-        h3: 'korean',
-        h4: 'parenthesis',
-        h5: 'none'
-      },
-      listCustomization: {
-        ulLevels: [
-          { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em', bottomMargin: '1rem' },
-          { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em', bottomMargin: '1rem' }
-        ],
-        olLevels: [
-          { fontSize: '1.125rem', fontFamily: "'Times New Roman', serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1.125rem', fontFamily: "'Times New Roman', serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1.125rem', fontFamily: "'Times New Roman', serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1.125rem', fontFamily: "'Times New Roman', serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1.125rem', fontFamily: "'Times New Roman', serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
-        ]
-      },
-      styles: {
-        body: {
-          fontFamily: "'Times New Roman', serif",
-          lineHeight: "1.8",
-          color: "#2c2c2c",
-          backgroundColor: "#fefefe",
-        },
-        h1: {
-          fontSize: "2.25rem",
-          fontWeight: "bold",
-          color: "#1a1a1a",
-          marginTop: "2rem",
-          marginBottom: "1rem",
-          textAlign: "center",
-          borderBottom: "2px solid #d1d5db",
-          paddingBottom: "0.5rem",
-        },
-        h2: {
-          fontSize: "1.875rem",
-          fontWeight: "bold",
-          color: "#2d2d2d",
-          marginTop: "1.5rem",
-          marginBottom: "0.75rem",
-        },
-        h3: {
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          color: "#404040",
-          marginTop: "1.25rem",
-          marginBottom: "0.5rem",
-        },
-        h4: {
-          fontSize: "1.25rem",
-          fontWeight: "bold",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        h5: {
-          fontSize: "1.125rem",
-          fontWeight: "bold",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        h6: {
-          fontSize: "1rem",
-          fontWeight: "bold",
-          color: "#525252",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        p: {
-          fontSize: "1.125rem",
-          lineHeight: "1.8",
-          marginBottom: "1.25rem",
-          textAlign: "justify",
-          textIndent: "1.5rem",
-        },
-        blockquote: {
-          borderLeft: "3px solid #9ca3af",
-          paddingLeft: "1.5rem",
-          margin: "2rem 0",
-          fontStyle: "italic",
-          fontSize: "1.125rem",
-          color: "#4b5563",
-        },
-        ul: {
-          marginBottom: "1.25rem",
-          paddingLeft: "2rem",
-        },
-        ol: {
-          fontFamily: "'Nanum Gothic', sans-serif",
-          fontSize: "16px",
-          fontWeight: "400",
-          color: "#000000 !important",
-          backgroundColor: "#ffffff !important",
-          marginTop: "16px",
-          marginBottom: "16px",
-          padding: "8px"
-        },
-        li: {},
-        code: {
-          backgroundColor: "#f5f5f5",
-          padding: "0.25rem 0.5rem",
-          borderRadius: "0.125rem",
-          fontSize: "0.9rem",
-          fontFamily: "'Courier New', monospace",
-          border: "1px solid #d1d5db",
-        },
-        pre: {
-          backgroundColor: "#f8f9fa",
-          padding: "1.5rem",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.25rem",
-          marginBottom: "1.5rem",
-          overflow: "auto",
-        },
-        strong: {
-          fontWeight: "bold",
-        },
-        em: {
-          fontStyle: "italic",
-        },
-        a: {
-          color: "#1d4ed8",
-          textDecoration: "underline",
-        },
-      },
-    },
-    {
-      id: "minimal",
-      name: "미니먀 스타일",
-      headingNumbering: {
-        h1: 'number',
-        h2: 'number',
-        h3: 'number',
-        h4: 'number',
-        h5: 'number'
-      },
-      listCustomization: {
-        ulLevels: [
-          { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em', bottomMargin: '1rem' },
-          { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
-          { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em', bottomMargin: '1rem' }
-        ],
-        olLevels: [
-          { fontSize: '1rem', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-          { fontSize: '1rem', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
-        ]
-      },
-      styles: {
-        body: {
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          lineHeight: "1.6",
-          color: "#333333",
-          backgroundColor: "#ffffff",
-          maxWidth: "800px",
-          margin: "0 auto",
-        },
-        h1: {
-          fontSize: "2rem",
-          fontWeight: "300",
-          color: "#000000",
-          marginTop: "3rem",
-          marginBottom: "1.5rem",
-          letterSpacing: "-0.025em",
-        },
-        h2: {
-          fontSize: "1.5rem",
-          fontWeight: "300",
-          color: "#000000",
-          marginTop: "2rem",
-          marginBottom: "1rem",
-          letterSpacing: "-0.025em",
-        },
-        h3: {
-          fontSize: "1.25rem",
-          fontWeight: "400",
-          color: "#000000",
-          marginTop: "1.5rem",
-          marginBottom: "0.75rem",
-        },
-        h4: {
-          fontSize: "1.125rem",
-          fontWeight: "400",
-          color: "#000000",
-          marginTop: "1.25rem",
-          marginBottom: "0.5rem",
-        },
-        h5: {
-          fontSize: "1rem",
-          fontWeight: "500",
-          color: "#000000",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-        },
-        h6: {
-          fontSize: "0.875rem",
-          fontWeight: "500",
-          color: "#000000",
-          marginTop: "1rem",
-          marginBottom: "0.5rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-        },
-        p: {
-          fontSize: "1rem",
-          lineHeight: "1.7",
-          marginBottom: "1.5rem",
-          color: "#333333",
-        },
-        blockquote: {
-          borderLeft: "2px solid #000000",
-          paddingLeft: "1rem",
-          margin: "2rem 0",
-          fontStyle: "normal",
-          color: "#666666",
-        },
-        ul: {
-          marginBottom: "1.5rem",
-          paddingLeft: "1rem",
-          listStyle: "none",
-        },
-        ol: {
-          fontFamily: "'Nanum Gothic', sans-serif",
-          fontSize: "16px",
-          fontWeight: "400",
-          color: "#000000 !important",
-          backgroundColor: "#ffffff !important",
-          marginTop: "16px",
-          marginBottom: "16px",
-          padding: "8px"
-        },
-        li: {},
-        code: {
-          backgroundColor: "#f5f5f5",
-          padding: "0.125rem 0.25rem",
-          fontSize: "0.875rem",
-          fontFamily: "'SF Mono', Monaco, monospace",
-        },
-        pre: {
-          backgroundColor: "#f8f8f8",
-          padding: "1rem",
-          marginBottom: "1.5rem",
-          overflow: "auto",
-          fontSize: "0.875rem",
-        },
-        strong: {
-          fontWeight: "600",
-        },
-        em: {
-          fontStyle: "italic",
-        },
-        a: {
-          color: "#000000",
-          textDecoration: "underline",
-          textDecorationThickness: "1px",
-          textUnderlineOffset: "2px",
-        },
-      },
-    },
+    modernStyle as DocumentStyle,
+    classicStyle as DocumentStyle,
+    minimalStyle as DocumentStyle,
+    cleanStyle as DocumentStyle,
+    korGovStyle as DocumentStyle
   ]
 }
 
+export function getDefaultStyleById(id: string): DocumentStyle | undefined {
+  const styles = getDefaultStyles()
+  return styles.find(style => style.id === id)
+}
+
 export function createNewStyle(name: string): DocumentStyle {
-  return {
+  const defaultStyles = getDefaultStyles()
+  const baseStyle = defaultStyles[0] || {
     id: Date.now().toString(),
-    name,
+    name: name,
     headingNumbering: {
       h1: 'number',
-      h2: 'korean',
+      h2: 'korean', 
       h3: 'parenthesis',
-      h4: 'number',
+      h4: 'none',
       h5: 'none'
     },
     listCustomization: {
       ulLevels: [
-        { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em' },
-        { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-        { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-        { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-        { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
+        { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em', bottomMargin: '1rem' },
+        { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+        { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+        { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+        { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em', bottomMargin: '1rem' }
       ],
       olLevels: [
-        { fontSize: '1rem', fontFamily: "system-ui, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
-        { fontSize: '1rem', fontFamily: "system-ui, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-        { fontSize: '1rem', fontFamily: "system-ui, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-        { fontSize: '1rem', fontFamily: "system-ui, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-        { fontSize: '1rem', fontFamily: "system-ui, sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
+        { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+        { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+        { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+        { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+        { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' }
       ]
     },
     styles: {
-      body: {
-        fontFamily: "system-ui, sans-serif",
-        lineHeight: "1.6",
-        color: "#000000",
-        backgroundColor: "#ffffff",
-      },
-      h1: {
-        fontSize: "2rem",
-        fontWeight: "bold",
-        marginTop: "1.5rem",
-        marginBottom: "1rem",
-      },
-      h2: {
-        fontSize: "1.5rem",
-        fontWeight: "bold",
-        marginTop: "1.25rem",
-        marginBottom: "0.75rem",
-      },
-      h3: {
-        fontSize: "1.25rem",
-        fontWeight: "bold",
-        marginTop: "1rem",
-        marginBottom: "0.5rem",
-      },
-      h4: {
-        fontSize: "1.125rem",
-        fontWeight: "bold",
-        marginTop: "1rem",
-        marginBottom: "0.5rem",
-      },
-      h5: {
-        fontSize: "1rem",
-        fontWeight: "bold",
-        marginTop: "1rem",
-        marginBottom: "0.5rem",
-      },
-      h6: {
-        fontSize: "0.875rem",
-        fontWeight: "bold",
-        marginTop: "1rem",
-        marginBottom: "0.5rem",
-      },
-      p: {
-        fontSize: "1rem",
-        lineHeight: "1.6",
-        marginBottom: "1rem",
-      },
-      blockquote: {
-        borderLeft: "4px solid #ccc",
-        paddingLeft: "1rem",
-        margin: "1rem 0",
-        fontStyle: "italic",
-      },
-      ul: {
-        marginBottom: "1rem",
-        paddingLeft: "1.5rem",
-      },
-      ol: {
-        fontFamily: "'Nanum Gothic', sans-serif",
-        fontSize: "16px",
-        fontWeight: "400",
-        color: "#000000",
-        backgroundColor: "#ffffff",
-        marginTop: "16px",
-        marginBottom: "16px",
-        padding: "8px"
-      },
-      li: {},
-      code: {
-        backgroundColor: "#f4f4f4",
-        padding: "0.25rem",
-        borderRadius: "0.25rem",
-        fontSize: "0.875rem",
-        fontFamily: "monospace",
-      },
-      pre: {
-        backgroundColor: "#f4f4f4",
-        padding: "1rem",
-        borderRadius: "0.25rem",
-        marginBottom: "1rem",
-        overflow: "auto",
-      },
-      strong: {
-        fontWeight: "bold",
-      },
-      em: {
-        fontStyle: "italic",
-      },
-      a: {
-        color: "#0066cc",
-        textDecoration: "underline",
-      },
-    },
+      body: { fontFamily: "'NanumSquare', sans-serif", fontSize: '16px', lineHeight: '1.6', color: '#333333', backgroundColor: '#ffffff', margin: '0', padding: '20px' },
+      h1: { fontSize: '2.5rem', fontWeight: '700', color: '#2c3e50', marginTop: '0', marginBottom: '1.5rem', lineHeight: '1.2' },
+      h2: { fontSize: '2rem', fontWeight: '600', color: '#34495e', marginTop: '2rem', marginBottom: '1rem', lineHeight: '1.3' },
+      h3: { fontSize: '1.75rem', fontWeight: '600', color: '#34495e', marginTop: '1.5rem', marginBottom: '0.75rem', lineHeight: '1.4' },
+      h4: { fontSize: '1.5rem', fontWeight: '600', color: '#34495e', marginTop: '1.25rem', marginBottom: '0.5rem', lineHeight: '1.4' },
+      h5: { fontSize: '1.25rem', fontWeight: '600', color: '#34495e', marginTop: '1rem', marginBottom: '0.5rem', lineHeight: '1.4' },
+      h6: { fontSize: '1.125rem', fontWeight: '600', color: '#34495e', marginTop: '1rem', marginBottom: '0.5rem', lineHeight: '1.4' },
+      p: { marginTop: '0', marginBottom: '1rem', lineHeight: '1.6' },
+      blockquote: { margin: '1.5rem 0', padding: '1rem 1.5rem', borderLeft: '4px solid #3498db', backgroundColor: '#ecf0f1', fontStyle: 'italic', color: '#555555' },
+      ul: { margin: '1rem 0', paddingLeft: '0' },
+      ol: { margin: '1rem 0', paddingLeft: '0' },
+      li: { marginBottom: '0.5rem', lineHeight: '1.6' },
+      code: { fontFamily: "'Courier New', monospace", fontSize: '0.9rem', backgroundColor: '#f8f9fa', color: '#e74c3c', padding: '0.2rem 0.4rem', borderRadius: '0.25rem' },
+      pre: { fontFamily: "'Courier New', monospace", fontSize: '0.9rem', backgroundColor: '#2c3e50', color: '#ecf0f1', padding: '1rem', borderRadius: '0.5rem', overflow: 'auto', margin: '1.5rem 0' },
+      strong: { fontWeight: '700', color: '#2c3e50' },
+      em: { fontStyle: 'italic', color: '#7f8c8d' },
+      a: { color: '#3498db', textDecoration: 'underline' }
+    }
+  }
+
+  return {
+    ...JSON.parse(JSON.stringify(baseStyle)),
+    id: Date.now().toString(),
+    name: name
   }
 }

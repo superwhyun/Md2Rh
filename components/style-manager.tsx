@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Trash2, Plus, Copy, Download } from "lucide-react"
+import { Trash2, Plus, Copy, Download, ArrowLeft, Save, RotateCcw } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { type DocumentStyle, createNewStyle } from "@/lib/default-styles"
 import { StyleEditor } from "@/components/style-editor"
 
@@ -230,7 +231,7 @@ export function StyleManager({
             </Card>
           </>
         ) : (
-          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} onTempUpdate={handleTempStyleUpdate} />
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={handleEditCancel} onTempUpdate={handleTempStyleUpdate} onRestore={handleStyleUpdate} />
         )}
       </div>
     )
@@ -328,7 +329,7 @@ export function StyleManager({
             </Card>
           </div>
         ) : (
-          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={() => setEditingStyle(null)} onTempUpdate={handleTempStyleUpdate} />
+          <StyleEditor style={editingStyle} onSave={handleStyleUpdate} onCancel={handleEditCancel} onTempUpdate={handleTempStyleUpdate} onRestore={handleStyleUpdate} />
         )}
       </DialogContent>
     </Dialog>

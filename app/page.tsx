@@ -59,21 +59,32 @@ function hello() {
   const [tempStyle, setTempStyle] = useState<DocumentStyle | null>(null) // 실시간 편집을 위한 임시 스타일
 
   useEffect(() => {
-    // 로컬스토리지에서 저장된 스타일 불러오기
+    // 서버 기본 스타일과 로컬 커스텀 스타일 병합
+    const defaultStyles = getDefaultStyles()
     const savedStyles = localStorage.getItem("documentStyles")
+    
+    let mergedStyles = [...defaultStyles]
+    
     if (savedStyles) {
-      const parsedStyles = JSON.parse(savedStyles)
-      setStyles(parsedStyles)
-      if (parsedStyles.length > 0) {
-        setSelectedStyleId(parsedStyles[0].id)
-      }
-    } else {
-      // 기본 스타일 설정
-      const defaultStyles = getDefaultStyles()
-      setStyles(defaultStyles)
-      setSelectedStyleId(defaultStyles[0].id)
-      localStorage.setItem("documentStyles", JSON.stringify(defaultStyles))
+      const parsedStyles = JSON.parse(savedStyles) as DocumentStyle[]
+      
+      // 로컬 스타일을 순회하면서 병합
+      parsedStyles.forEach(localStyle => {
+        const existingIndex = mergedStyles.findIndex(style => style.id === localStyle.id)
+        if (existingIndex >= 0) {
+          // 같은 ID가 있으면 로컬 스타일로 교체 (우선순위)
+          mergedStyles[existingIndex] = localStyle
+        } else {
+          // 새로운 커스텀 스타일이면 추가
+          mergedStyles.push(localStyle)
+        }
+      })
     }
+    
+    console.log('Merged styles:', mergedStyles.map(s => s.name))
+    setStyles(mergedStyles)
+    setSelectedStyleId(mergedStyles[0].id)
+    localStorage.setItem("documentStyles", JSON.stringify(mergedStyles))
   }, [])
 
   const handleStylesUpdate = (updatedStyles: DocumentStyle[]) => {

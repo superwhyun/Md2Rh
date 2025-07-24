@@ -11,23 +11,50 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { DocumentStyle, NumberingType, ULLevelStyle, OLLevelStyle } from "@/lib/default-styles"
 import { ColorPicker } from "@/components/color-picker"
 import { fontOptions, fontCategories, getFontsByCategory } from "@/lib/fonts"
+import { ArrowLeft, Save, RotateCcw } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getDefaultStyleById } from "@/lib/default-styles"
+import { useToast } from "@/hooks/use-toast"
 
 interface StyleEditorProps {
   style: DocumentStyle
   onSave: (style: DocumentStyle) => void
   onCancel: () => void
   onTempUpdate?: (style: DocumentStyle) => void
+  onRestore?: (style: DocumentStyle) => void
 }
 
-export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEditorProps) {
+export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }: StyleEditorProps) {
   const [editedStyle, setEditedStyle] = useState<DocumentStyle>(JSON.parse(JSON.stringify(style)))
+  const { toast } = useToast()
 
   // 스타일이 변경될 때마다 실시간으로 임시 업데이트 전송
   useEffect(() => {
     onTempUpdate?.(editedStyle)
   }, [editedStyle])
 
+  const handleRestore = () => {
+    const defaultStyle = getDefaultStyleById(style.id)
+    if (defaultStyle && onRestore) {
+      const restoredStyle = {
+        ...defaultStyle,
+        name: editedStyle.name // 사용자가 변경한 이름은 유지
+      }
+      setEditedStyle(restoredStyle)
+      onRestore(restoredStyle)
+    }
+  }
+
+  const handleSave = () => {
+    onSave(editedStyle)
+    toast({
+      title: "저장 완료",
+      description: "서식이 성공적으로 저장되었습니다.",
+    })
+  }
+
   const updateElementStyle = (element: keyof DocumentStyle["styles"], property: string, value: string) => {
+    console.log(`Updating ${element}.${property} to:`, value)
     setEditedStyle((prev) => ({
       ...prev,
       styles: {
@@ -179,14 +206,20 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
               <Label>텍스트 색상</Label>
               <ColorPicker
                 value={elementStyle?.color || "#000000"}
-                onChange={(color) => updateElementStyle(elementKey, "color", color)}
+                onChange={(color) => {
+                  console.log('Text color changed to:', color)
+                  updateElementStyle(elementKey, "color", color)
+                }}
               />
             </div>
             <div>
               <Label>배경 색상</Label>
               <ColorPicker
                 value={elementStyle?.backgroundColor || "#ffffff"}
-                onChange={(color) => updateElementStyle(elementKey, "backgroundColor", color)}
+                onChange={(color) => {
+                  console.log('Background color changed to:', color)
+                  updateElementStyle(elementKey, "backgroundColor", color)
+                }}
               />
             </div>
             <div>
@@ -244,12 +277,42 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
           <Input value={editedStyle.name} onChange={(e) => updateStyleName(e.target.value)} />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>
-            돌아가기
-          </Button>
-          <Button onClick={() => onSave(editedStyle)}>
-            저장
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={onCancel}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>돌아가기</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={handleRestore}>
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>기본값 복원</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>저장</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -415,6 +478,14 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
                       value={level.numberSpacing || '0.3em'}
                       onChange={(e) => updateOLLevel(index, 'numberSpacing', e.target.value)}
                       placeholder="0.3em"
+                    />
+                  </div>
+                  <div>
+                    <Label>하단 여백</Label>
+                    <Input
+                      value={level.bottomMargin || '1rem'}
+                      onChange={(e) => updateOLLevel(index, 'bottomMargin', e.target.value)}
+                      placeholder="1rem"
                     />
                   </div>
                   <div>

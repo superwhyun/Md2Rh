@@ -96,11 +96,11 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   ]
 
   const getDefaultOLLevels = () => [
-    { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em' },
-    { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em' }
+    { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
+    { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' }
   ]
 
 
@@ -176,6 +176,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       .custom-ol .ol-level-${index} {
         position: relative;
         margin-left: ${level.indentation};
+        margin-bottom: ${level.bottomMargin || '1rem'};
         padding-left: ${spacing};
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
@@ -185,7 +186,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
         ${level.boxStyle ? `
           border: 1px solid #e0e0e0;
           border-radius: 4px;
-          margin: 2px 0;
+          margin: 2px 0 ${level.bottomMargin || '1rem'} 0;
           padding-top: ${level.padding !== '0' ? level.padding : '4px'};
           padding-bottom: ${level.padding !== '0' ? level.padding : '4px'};
           padding-right: 8px;
@@ -197,9 +198,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       .custom-ol .ol-level-${index} ol {
         margin-left: -8px;
         margin-top: 4px;
+        margin-bottom: ${level.bottomMargin || '1rem'};
         position: relative;
       }
-      ` : ''}
+      ` : `
+      .custom-ol .ol-level-${index} ol {
+        margin-bottom: ${level.bottomMargin || '1rem'};
+      }
+      `}
     `}).join('\n')
     
     return olCSS
@@ -299,15 +305,35 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     </ul>
                     )
                   },
-                  ol: ({ children }) => (
-                    <ol style={{ ...style.styles.ol, listStyle: 'decimal' }} className="custom-ol">
+                  ol: ({ children }) => {
+                    // 첫 번째 레벨(depth 0)의 bottomMargin 사용
+                    const bottomMargin = olLevels[0]?.bottomMargin || '1rem'
+                    
+                    // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
+                    const hasLooseItems = React.Children.toArray(children).some(child => {
+                      if (React.isValidElement(child) && child.type === 'li') {
+                        return React.Children.toArray(child.props.children).some(grandchild => 
+                          React.isValidElement(grandchild) && grandchild.type === 'p'
+                        )
+                      }
+                      return false
+                    })
+                    
+                    // loose list일 때는 bottomMargin을 절반으로 줄임
+                    const adjustedBottomMargin = hasLooseItems 
+                      ? `${parseFloat(bottomMargin) / 2}rem` 
+                      : bottomMargin
+                    
+                    return (
+                    <ol style={{ ...style.styles.ol, listStyle: 'decimal', margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ol">
                       {React.Children.map(children, (child) => {
                         return React.isValidElement(child)
                           ? React.cloneElement(child, { 'data-ol': true })
                           : child
                       })}
                     </ol>
-                  ),
+                    )
+                  },
                   li: ({ children, ...props }) => {
                     const isOrderedList = props['data-ol']
                     if (isOrderedList) {
@@ -393,13 +419,19 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       </code>
                     ) : (
                       <div style={style.styles.pre}>
-                        <pre style={{ margin: 0, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                        <pre style={{ margin: 0, fontFamily: style.styles.pre.fontFamily || "monospace", whiteSpace: "pre-wrap" }}>
                           <code>{children}</code>
                         </pre>
                       </div>
                     )
                   },
-                  strong: ({ children }) => <strong style={style.styles.strong}>{children}</strong>,
+                  strong: ({ children, ...props }) => {
+                    // node 정보에서 앞뒤 공백 확인
+                    const hasSpaceBefore = props.node?.position?.start.offset > 0
+                    const hasSpaceAfter = props.node?.position?.end.offset < (props.node?.position?.source?.length || 0)
+                    
+                    return <strong style={style.styles.strong}>{children}</strong>
+                  },
                   em: ({ children }) => <em style={style.styles.em}>{children}</em>,
                   a: ({ children, href }) => (
                     <a href={href} style={style.styles.a}>
