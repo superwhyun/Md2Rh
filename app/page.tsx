@@ -6,7 +6,7 @@ import { MarkdownPreview } from "@/components/markdown-preview"
 import { StyleManager } from "@/components/style-manager"
 import { StyleSelector } from "@/components/style-selector"
 import { Button } from "@/components/ui/button"
-import { Settings } from "lucide-react"
+import { Settings, Github } from "lucide-react"
 import { type DocumentStyle, getDefaultStyles } from "@/lib/default-styles"
 
 export default function Home() {
@@ -40,9 +40,15 @@ function hello() {
 
 ### 순서없는 목록
 
-- 불릿 포인트 1
+- **불릿 포인트 1**
 - 불릿 포인트 2
 - 불릿 포인트 3
+- **굵은글씨** 테스트 항목
+- **중요한 내용:**
+    - 여기서 바보되더라니까
+    - 어라?
+
+- **Bold text** followed by normal text
 
 **이제 마크다운을 편집하여 문서를 작성해보세요!**
 `)
@@ -92,6 +98,15 @@ function hello() {
         </Button>
 
         <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={handleStyleSelect} />
+        
+        <div className="flex-1" />
+        
+        <Button variant="ghost" size="sm" asChild className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <a href="https://github.com/superwhyun/Md2Rh" target="_blank" rel="noopener noreferrer">
+            <Github className="h-4 w-4" />
+            GitHub
+          </a>
+        </Button>
       </div>
 
       {/* 메인 컨텐츠 영역 */}

@@ -315,6 +315,14 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate }: StyleEdit
                     />
                   </div>
                   <div>
+                    <Label>하단 여백</Label>
+                    <Input
+                      value={level.bottomMargin || '1rem'}
+                      onChange={(e) => updateULLevel(index, 'bottomMargin', e.target.value)}
+                      placeholder="1rem"
+                    />
+                  </div>
+                  <div>
                     <Label>폰트 크기</Label>
                     <Input
                       value={level.fontSize}

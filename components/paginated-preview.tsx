@@ -88,11 +88,11 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   }
 
   const getDefaultULLevels = () => [
-    { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em' },
-    { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-    { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-    { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em' },
-    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em' }
+    { marker: '□', fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, markerSpacing: '1em', bottomMargin: '1rem' },
+    { marker: 'o', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: '#ffffff', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+    { marker: '▪', fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+    { marker: '▫', fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, markerSpacing: '0.1em', bottomMargin: '1rem' },
+    { marker: '‣', fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, markerSpacing: '0.3em', bottomMargin: '1rem' }
   ]
 
   const getDefaultOLLevels = () => [
@@ -121,6 +121,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       .custom-ul .ul-level-${index} {
         position: relative;
         margin-left: ${level.indentation};
+        margin-bottom: ${level.bottomMargin || '1rem'};
         padding-left: calc(${markerWidth}em + ${spacing});
         font-size: ${level.fontSize};
         font-family: ${level.fontFamily === 'inherit' ? 'inherit' : level.fontFamily};
@@ -130,7 +131,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
         ${level.boxStyle ? `
           border: 1px solid #e0e0e0;
           border-radius: 4px;
-          margin: 2px 0;
+          margin: 2px 0 ${level.bottomMargin || '1rem'} 0;
           padding-top: ${level.padding !== '0' ? level.padding : '4px'};
           padding-bottom: ${level.padding !== '0' ? level.padding : '4px'};
           padding-right: 8px;
@@ -154,9 +155,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       .custom-ul .ul-level-${index} ul {
         margin-left: -8px;
         margin-top: 4px;
+        margin-bottom: ${level.bottomMargin || '1rem'};
         position: relative;
       }
-      ` : ''}
+      ` : `
+      .custom-ul .ul-level-${index} ul {
+        margin-bottom: ${level.bottomMargin || '1rem'};
+      }
+      `}
     `}).join('\n')
     
     return ulCSS
@@ -249,28 +255,50 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                 key={index}
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  // 모든 컴포넌트 로그 추가
-                  p: ({ children }) => {
-                    console.log('Paragraph children:', children)
-                    return <p style={style.styles.p}>{children}</p>
-                  },
                   h1: ({ children }) => <h1 style={style.styles.h1}>{children}</h1>,
                   h2: ({ children }) => <h2 style={style.styles.h2}>{children}</h2>,
                   h3: ({ children }) => <h3 style={style.styles.h3}>{children}</h3>,
                   h4: ({ children }) => <h4 style={style.styles.h4}>{children}</h4>,
                   h5: ({ children }) => <h5 style={style.styles.h5}>{children}</h5>,
                   h6: ({ children }) => <h6 style={style.styles.h6}>{children}</h6>,
-                  p: ({ children }) => <p style={style.styles.p}>{children}</p>,
+                  p: ({ children, node }) => {
+                    // li 태그 내부의 p 태그인지 확인
+                    const isInListItem = node?.parent?.tagName === 'li'
+                    const pStyle = isInListItem 
+                      ? { ...style.styles.p, margin: '0.2rem 0' }
+                      : style.styles.p
+                    return <p style={pStyle}>{children}</p>
+                  },
                   blockquote: ({ children }) => <blockquote style={style.styles.blockquote}>{children}</blockquote>,
-                  ul: ({ children }) => (
-                    <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: 0, marginBottom: '1rem' }} className="custom-ul">
+                  ul: ({ children }) => {
+                    // 첫 번째 레벨(depth 0)의 bottomMargin 사용
+                    const bottomMargin = ulLevels[0]?.bottomMargin || '1rem'
+                    
+                    // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
+                    const hasLooseItems = React.Children.toArray(children).some(child => {
+                      if (React.isValidElement(child) && child.type === 'li') {
+                        return React.Children.toArray(child.props.children).some(grandchild => 
+                          React.isValidElement(grandchild) && grandchild.type === 'p'
+                        )
+                      }
+                      return false
+                    })
+                    
+                    // loose list일 때는 bottomMargin을 절반으로 줄임
+                    const adjustedBottomMargin = hasLooseItems 
+                      ? `${parseFloat(bottomMargin) / 2}rem` 
+                      : bottomMargin
+                    
+                    return (
+                    <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ul">
                       {React.Children.map(children, (child) => {
                         return React.isValidElement(child)
                           ? React.cloneElement(child, { 'data-ul': true })
                           : child
                       })}
                     </ul>
-                  ),
+                    )
+                  },
                   ol: ({ children }) => (
                     <ol style={{ ...style.styles.ol, listStyle: 'decimal' }} className="custom-ol">
                       {React.Children.map(children, (child) => {
@@ -292,8 +320,19 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                         depth = extractDepthFromContent(text)
                       }
                       const cleanedChildren = React.Children.map(children, (child) => {
-                        if (typeof child === 'string') return cleanDepthMarkers(child)
-                        if (React.isValidElement(child)) return React.cloneElement(child, { ...child.props, children: typeof child.props.children === 'string' ? cleanDepthMarkers(child.props.children) : child.props.children })
+                        if (typeof child === 'string') {
+                          return cleanDepthMarkers(child)
+                        }
+                        if (React.isValidElement(child)) {
+                          return React.cloneElement(child, { 
+                            ...child.props, 
+                            children: typeof child.props.children === 'string' 
+                              ? cleanDepthMarkers(child.props.children) 
+                              : React.Children.map(child.props.children, (grandchild) => 
+                                  typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
+                                )
+                          })
+                        }
                         return child
                       })
                       return <li style={style.styles.li} className={`ol-level-${depth}`}>{cleanedChildren}</li>
@@ -307,8 +346,19 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                         depth = extractDepthFromContent(text)
                       }
                       const cleanedChildren = React.Children.map(children, (child) => {
-                        if (typeof child === 'string') return cleanDepthMarkers(child)
-                        if (React.isValidElement(child)) return React.cloneElement(child, { ...child.props, children: typeof child.props.children === 'string' ? cleanDepthMarkers(child.props.children) : child.props.children })
+                        if (typeof child === 'string') {
+                          return cleanDepthMarkers(child)
+                        }
+                        if (React.isValidElement(child)) {
+                          return React.cloneElement(child, { 
+                            ...child.props, 
+                            children: typeof child.props.children === 'string' 
+                              ? cleanDepthMarkers(child.props.children) 
+                              : React.Children.map(child.props.children, (grandchild) => 
+                                  typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
+                                )
+                          })
+                        }
                         return child
                       })
                       return <li style={style.styles.li} className={`ul-level-${depth}`}>{cleanedChildren}</li>
@@ -349,7 +399,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       </div>
                     )
                   },
-                  strong: ({ children }) => <> <strong style={style.styles.strong}>{children}</strong></>,
+                  strong: ({ children }) => <strong style={style.styles.strong}>{children}</strong>,
                   em: ({ children }) => <em style={style.styles.em}>{children}</em>,
                   a: ({ children, href }) => (
                     <a href={href} style={style.styles.a}>

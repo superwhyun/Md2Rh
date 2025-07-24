@@ -68,5 +68,12 @@ export function extractDepthFromContent(content: string): number {
 
 
 export function cleanDepthMarkers(content: string): string {
-  return content.replace(/\s*\[(UL|OL)_DEPTH_\d+\]\s*/g, ' ').trim()
+  if (typeof content !== 'string') return content
+  
+  // 더 강력한 정규식으로 마커 제거
+  return content
+    .replace(/\[UL_DEPTH_\d+\]/g, '')
+    .replace(/\[OL_DEPTH_\d+\]/g, '')
+    .replace(/^\s+/, '')  // 앞 공백 제거
+    .replace(/\s+$/, '')  // 뒤 공백 제거
 }
