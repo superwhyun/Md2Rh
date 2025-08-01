@@ -24,17 +24,16 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
     })
     
     return (
-      <div className="mx-auto bg-white shadow-lg" style={{
-        width: '210mm',
-        height: '297mm',
-        maxWidth: '100%',
-        padding: '0',
-        boxSizing: 'border-box',
-        transform: 'scale(0.8)',
-        transformOrigin: 'top center',
-        position: 'relative',
-        marginBottom: '20px'
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        <div className="bg-white shadow-lg" style={{
+          width: '210mm',
+          height: '297mm',
+          padding: '0',
+          boxSizing: 'border-box',
+          transform: 'scale(0.75)',
+          transformOrigin: 'top center',
+          position: 'relative'
+        }}>
         <div style={{
           ...style?.styles.body,
           padding: '10mm',
@@ -68,6 +67,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
               {today}
             </p>
           </div>
+        </div>
         </div>
       </div>
     )
@@ -424,8 +424,8 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-100 p-4">
-        <div ref={printRef}>
+      <div className="flex-1 overflow-auto bg-gray-100" style={{ padding: '20px 0', width: '680px', minWidth: '680px', maxWidth: '680px' }}>
+        <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minWidth: '680px' }}>
           {renderTitlePage()}
           <PaginatedPreview content={finalMarkdown} style={style} />
         </div>

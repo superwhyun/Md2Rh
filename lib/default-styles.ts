@@ -73,6 +73,9 @@ export interface DocumentStyle {
     strong: CSSProperties
     em: CSSProperties
     a: CSSProperties
+    table: CSSProperties
+    th: CSSProperties
+    td: CSSProperties
   }
 }
 
@@ -136,7 +139,10 @@ export function createNewStyle(name: string): DocumentStyle {
       pre: { fontFamily: "'Courier New', monospace", fontSize: '0.9rem', backgroundColor: '#2c3e50', color: '#ecf0f1', padding: '1rem', borderRadius: '0.5rem', overflow: 'auto', margin: '1.5rem 0' },
       strong: { fontWeight: '700', color: '#2c3e50' },
       em: { fontStyle: 'italic', color: '#7f8c8d' },
-      a: { color: '#3498db', textDecoration: 'underline' }
+      a: { color: '#3498db', textDecoration: 'underline' },
+      table: { borderCollapse: 'collapse', width: '100%', margin: '1rem 0', fontFamily: "'NanumSquare', sans-serif", fontSize: '16px' },
+      th: { border: '1px solid #ddd', padding: '8px', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left', verticalAlign: 'middle', fontFamily: "'NanumSquare', sans-serif", fontSize: '16px', color: '#333333', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ddd' },
+      td: { border: '1px solid #ddd', padding: '8px', textAlign: 'left', verticalAlign: 'middle', fontFamily: "'NanumSquare', sans-serif", fontSize: '16px', color: '#333333', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ddd' }
     }
   }
 

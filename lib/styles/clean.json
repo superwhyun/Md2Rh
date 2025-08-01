@@ -252,6 +252,41 @@
       "color": "#2563eb",
       "textDecoration": "underline",
       "textDecorationColor": "#93c5fd"
+    },
+    "table": {
+      "borderCollapse": "collapse",
+      "width": "100%",
+      "margin": "1.5rem 0",
+      "fontFamily": "system-ui, sans-serif",
+      "fontSize": "0.95rem"
+    },
+    "th": {
+      "border": "2px solid #d1d5db",
+      "padding": "0.875rem",
+      "backgroundColor": "#f3f4f6",
+      "fontWeight": "600",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "2px",
+      "borderStyle": "solid",
+      "borderColor": "#d1d5db",
+      "fontFamily": "system-ui, sans-serif",
+      "fontSize": "0.95rem",
+      "color": "#111827"
+    },
+    "td": {
+      "border": "1px solid #e5e7eb",
+      "padding": "0.875rem",
+      "backgroundColor": "#ffffff",
+      "fontWeight": "normal",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "1px",
+      "borderStyle": "solid",
+      "borderColor": "#e5e7eb",
+      "fontFamily": "system-ui, sans-serif",
+      "fontSize": "0.95rem",
+      "color": "#1f2937"
     }
   }
 }

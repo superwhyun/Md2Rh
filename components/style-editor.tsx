@@ -153,6 +153,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
 
   const renderStyleControls = (elementName: string, elementKey: keyof DocumentStyle["styles"], headingLevel?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5') => {
     const elementStyle = editedStyle.styles[elementKey] as any
+    const isTableElement = elementKey === 'th' || elementKey === 'td'
 
     return (
       <Card key={elementKey}>
@@ -242,6 +243,81 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
               />
             </div>
           </div>
+
+          {/* 표 요소(th, td)에 대한 추가 설정 */}
+          {isTableElement && (
+            <div className="border-t pt-4 space-y-4">
+              <h4 className="font-medium text-sm">표 전용 설정</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>테두리 두께</Label>
+                  <Input
+                    value={elementStyle?.borderWidth || "1px"}
+                    onChange={(e) => updateElementStyle(elementKey, "borderWidth", e.target.value)}
+                    placeholder="1px"
+                  />
+                </div>
+                <div>
+                  <Label>테두리 색상</Label>
+                  <ColorPicker
+                    value={elementStyle?.borderColor || "#ddd"}
+                    onChange={(color) => updateElementStyle(elementKey, "borderColor", color)}
+                  />
+                </div>
+                <div>
+                  <Label>좌우 정렬</Label>
+                  <Select 
+                    value={elementStyle?.textAlign || "left"} 
+                    onValueChange={(value) => updateElementStyle(elementKey, "textAlign", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="left">왼쪽 정렬</SelectItem>
+                      <SelectItem value="center">가운데 정렬</SelectItem>
+                      <SelectItem value="right">오른쪽 정렬</SelectItem>
+                      <SelectItem value="justify">양쪽 정렬</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>상하 정렬</Label>
+                  <Select 
+                    value={elementStyle?.verticalAlign || "middle"} 
+                    onValueChange={(value) => updateElementStyle(elementKey, "verticalAlign", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="top">위쪽 정렬</SelectItem>
+                      <SelectItem value="middle">가운데 정렬</SelectItem>
+                      <SelectItem value="bottom">아래쪽 정렬</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>테두리 스타일</Label>
+                  <Select 
+                    value={elementStyle?.borderStyle || "solid"} 
+                    onValueChange={(value) => updateElementStyle(elementKey, "borderStyle", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solid">실선</SelectItem>
+                      <SelectItem value="dashed">점선</SelectItem>
+                      <SelectItem value="dotted">원점선</SelectItem>
+                      <SelectItem value="double">이중선</SelectItem>
+                      <SelectItem value="none">없음</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* 제목 레벨인 경우 넘버링 설정 추가 */}
           {headingLevel && (
@@ -317,11 +393,12 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
       </div>
 
       <Tabs defaultValue="headings" className="h-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="headings">제목</TabsTrigger>
           <TabsTrigger value="text">텍스트</TabsTrigger>
           <TabsTrigger value="ul-lists">UL목록</TabsTrigger>
           <TabsTrigger value="ol-lists">OL목록</TabsTrigger>
+          <TabsTrigger value="table">표</TabsTrigger>
           <TabsTrigger value="code">코드</TabsTrigger>
         </TabsList>
 
@@ -572,6 +649,12 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="table" className="space-y-4 h-full overflow-auto">
+          {renderStyleControls("표 (Table)", "table")}
+          {renderStyleControls("표 헤더 (TH)", "th")}
+          {renderStyleControls("표 셀 (TD)", "td")}
         </TabsContent>
 
         <TabsContent value="code" className="space-y-4 h-full overflow-auto">

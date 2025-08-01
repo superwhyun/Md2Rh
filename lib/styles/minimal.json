@@ -253,6 +253,41 @@
       "color": "#007acc",
       "textDecoration": "none",
       "borderBottom": "1px solid #007acc"
+    },
+    "table": {
+      "borderCollapse": "collapse",
+      "width": "100%",
+      "margin": "1rem 0",
+      "fontFamily": "'Helvetica Neue', Arial, sans-serif",
+      "fontSize": "0.95rem"
+    },
+    "th": {
+      "border": "1px solid #e8e8e8",
+      "padding": "0.75rem",
+      "backgroundColor": "#f8f8f8",
+      "fontWeight": "500",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "1px",
+      "borderStyle": "solid",
+      "borderColor": "#e8e8e8",
+      "fontFamily": "'Helvetica Neue', Arial, sans-serif",
+      "fontSize": "0.95rem",
+      "color": "#333333"
+    },
+    "td": {
+      "border": "1px solid #e8e8e8",
+      "padding": "0.75rem",
+      "backgroundColor": "#ffffff",
+      "fontWeight": "normal",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "1px",
+      "borderStyle": "solid",
+      "borderColor": "#e8e8e8",
+      "fontFamily": "'Helvetica Neue', Arial, sans-serif",
+      "fontSize": "0.95rem",
+      "color": "#333333"
     }
   }
 }

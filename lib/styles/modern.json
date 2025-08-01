@@ -252,6 +252,39 @@
       "color": "#3b82f6",
       "textDecoration": "underline",
       "textDecorationColor": "#93c5fd"
+    },
+    "table": {
+      "borderCollapse": "collapse",
+      "width": "100%",
+      "margin": "1rem 0",
+      "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      "fontSize": "16px"
+    },
+    "th": {
+      "border": "1px solid #e2e8f0",
+      "padding": "12px",
+      "backgroundColor": "#f8fafc",
+      "fontWeight": "600",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "1px",
+      "borderStyle": "solid",
+      "borderColor": "#e2e8f0",
+      "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      "fontSize": "16px",
+      "color": "#1a1a1a"
+    },
+    "td": {
+      "border": "1px solid #e2e8f0",
+      "padding": "12px",
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "borderWidth": "1px",
+      "borderStyle": "solid",
+      "borderColor": "#e2e8f0",
+      "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      "fontSize": "16px",
+      "color": "#333333"
     }
   }
 }

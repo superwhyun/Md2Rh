@@ -154,8 +154,8 @@ function hello() {
           </div>
         )}
 
-        {/* 중앙 패널 - 마크다운 에디터 */}
-        <div className={`${isStyleManagerOpen ? 'flex-1' : 'w-1/2'} border-r flex flex-col overflow-hidden`}>
+        {/* 중앙 패널 - 마크다운 에디터 (가변 크기) */}
+        <div className="flex-1 border-r flex flex-col overflow-hidden min-w-0">
           <MarkdownEditor 
             value={markdown} 
             onChange={setMarkdown}
@@ -164,8 +164,8 @@ function hello() {
           />
         </div>
 
-        {/* 오른쪽 패널 - 미리보기 */}
-        <div className={`${isStyleManagerOpen ? 'flex-1' : 'w-1/2'} flex flex-col overflow-hidden`}>
+        {/* 오른쪽 패널 - 미리보기 (고정 크기) */}
+        <div className="flex-shrink-0 flex flex-col overflow-hidden" style={{ width: '680px', minWidth: '680px', maxWidth: '680px' }}>
           <MarkdownPreview 
             markdown={markdown} 
             style={selectedStyle}

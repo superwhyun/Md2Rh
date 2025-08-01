@@ -212,16 +212,16 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   }
 
   return (
-    <div className="mx-auto bg-white shadow-lg" style={{
-      width: '210mm',
-      minHeight: '297mm',
-      maxWidth: '100%',
-      padding: '0',
-      boxSizing: 'border-box',
-      transform: 'scale(0.8)',
-      transformOrigin: 'top center',
-      position: 'relative'
-    }}>
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
+      <div className="bg-white shadow-lg" style={{
+        width: '210mm',
+        minHeight: '297mm',
+        padding: '0',
+        boxSizing: 'border-box',
+        transform: 'scale(0.75)',
+        transformOrigin: 'top center',
+        position: 'relative'
+      }}>
       <style>
         {generateULLevelCSS(ulLevels)}
         {generateOLLevelCSS(olLevels)}
@@ -391,23 +391,69 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     }
                   },
                   table: ({ children }) => (
-                    <table style={{ borderCollapse: 'collapse', width: '100%', margin: '1rem 0' }}>
+                    <table style={style.styles.table}>
                       {children}
                     </table>
                   ),
                   thead: ({ children }) => <thead>{children}</thead>,
                   tbody: ({ children }) => <tbody>{children}</tbody>,
                   tr: ({ children }) => <tr>{children}</tr>,
-                  th: ({ children }) => (
-                    <th style={{ border: '1px solid #ddd', padding: '8px', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>
-                      {children}
-                    </th>
-                  ),
-                  td: ({ children }) => (
-                    <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
-                      {children}
-                    </td>
-                  ),
+                  th: ({ children }) => {
+                    // 안전한 기본값 설정
+                    const defaultThStyle = {
+                      border: '1px solid #ddd',
+                      padding: '8px',
+                      backgroundColor: '#f2f2f2',
+                      fontWeight: 'bold',
+                      textAlign: 'left',
+                      verticalAlign: 'middle'
+                    }
+                    
+                    // 스타일이 존재하는지 확인
+                    if (!style || !style.styles || !style.styles.th) {
+                      return <th style={defaultThStyle}>{children}</th>
+                    }
+                    
+                    const thStyle = style.styles.th as any
+                    const finalStyle = { ...defaultThStyle, ...thStyle }
+                    
+                    // 새로운 테두리 속성이 있으면 적용
+                    if (thStyle.borderWidth || thStyle.borderStyle || thStyle.borderColor) {
+                      const borderWidth = thStyle.borderWidth || '1px'
+                      const borderStyle = thStyle.borderStyle || 'solid'  
+                      const borderColor = thStyle.borderColor || '#ddd'
+                      finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
+                    }
+                    
+                    return <th style={finalStyle}>{children}</th>
+                  },
+                  td: ({ children }) => {
+                    // 안전한 기본값 설정
+                    const defaultTdStyle = {
+                      border: '1px solid #ddd',
+                      padding: '8px',
+                      textAlign: 'left',
+                      verticalAlign: 'middle'
+                    }
+                    
+                    // 스타일이 존재하는지 확인
+                    if (!style || !style.styles || !style.styles.td) {
+                      return <td style={defaultTdStyle}>{children}</td>
+                    }
+                    
+                    const tdStyle = style.styles.td as any
+                    const finalStyle = { ...defaultTdStyle, ...tdStyle }
+                    
+                    // 새로운 테두리 속성이 있으면 적용
+                    if (tdStyle.borderWidth || tdStyle.borderStyle || tdStyle.borderColor) {
+                      const borderWidth = tdStyle.borderWidth || '1px'
+                      const borderStyle = tdStyle.borderStyle || 'solid'
+                      const borderColor = tdStyle.borderColor || '#ddd'
+                      finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
+                    }
+                    
+                    return <td style={finalStyle}>{children}</td>
+                  },
                   code: ({ inline, children, ...props }) => {
                     // 블록 코드는 보통 pre 태그 안에 들어있거나 여러 줄을 가짐
                     const content = Array.isArray(children) ? children.join('') : children
@@ -480,6 +526,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
             )
           }
         })}
+      </div>
       </div>
     </div>
   )
