@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import type { DocumentStyle } from "@/lib/default-styles"
 import { extractDepthFromContent, cleanDepthMarkers } from "@/lib/list-depth-parser"
+import { parseTableWidths } from "@/lib/table-width-parser"
 import { LinkCard } from "@/components/link-card"
 
 interface PaginatedPreviewProps {
@@ -16,9 +17,13 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   if (!style) {
     return <div>Loading...</div>
   }
+
+  // 테이블 너비 정보를 간단하게 관리 - 전역 변수로 변경
+  const tableWidthsRef = React.useRef<string[]>([])
+  const columnIndexRef = React.useRef<number>(0)
+
   // 링크 카드 처리를 위한 함수
   const processContentWithLinkCards = (text: string) => {
-    console.log('Processing content:', text)
     
     // 링크 카드와 blob 이미지 모두 처리
     const linkCardRegex = /\[LINK_CARD:(https?:\/\/[^\]]+)\]/g
@@ -83,7 +88,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
     }
     
     const result = parts.length > 0 ? parts : [{ type: 'markdown', content: text }]
-    console.log('Processed parts:', result)
     return result
   }
 
@@ -251,8 +255,8 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                   margin: '1rem 0',
                   display: 'block'
                 }}
-                onError={(e) => console.error('Blob image load error:', part.src, e)}
-                onLoad={() => console.log('Blob image loaded successfully:', part.src)}
+                onError={(e) => {}}
+                onLoad={() => {}}
               />
             )
           } else {
@@ -390,15 +394,61 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       return <li style={style.styles.li} className={`ul-level-${depth}`}>{cleanedChildren}</li>
                     }
                   },
-                  table: ({ children }) => (
-                    <table style={style.styles.table}>
-                      {children}
-                    </table>
-                  ),
+                  table: ({ children }) => {
+                    // 새 테이블 시작 시 너비 정보 초기화
+                    tableWidthsRef.current = []
+                    columnIndexRef.current = 0
+                    
+                    return (
+                      <table style={{ 
+                        ...style.styles.table, 
+                        tableLayout: 'fixed' // 정확한 너비 적용을 위해 필요
+                      }}>
+                        {children}
+                      </table>
+                    )
+                  },
                   thead: ({ children }) => <thead>{children}</thead>,
                   tbody: ({ children }) => <tbody>{children}</tbody>,
-                  tr: ({ children }) => <tr>{children}</tr>,
+                  tr: ({ children }) => {
+                    // 새 행 시작 시 열 인덱스 리셋
+                    columnIndexRef.current = 0
+                    return <tr>{children}</tr>
+                  },
                   th: ({ children }) => {
+                    
+                    // 파서 로직을 먼저 실행 (스타일 체크 이전에)
+                    const childrenStr = React.Children.toArray(children).map(child => {
+                      if (typeof child === 'string') return child
+                      if (typeof child === 'number') return child.toString()
+                      if (React.isValidElement(child)) {
+                        // React 엘리먼트인 경우 props.children을 확인
+                        return child.props?.children || ''
+                      }
+                      return ''
+                    }).join('')
+                    
+                    // 파서를 사용해서 너비 정보 추출
+                    const widthMatch = childrenStr.match(/\{\{(\d+(?:\.\d+)?%)\}\}/)
+                    let cleanChildren = childrenStr
+                    
+                    if (widthMatch) {
+                      const percentage = parseFloat(widthMatch[1].replace('%', ''))
+                      if (percentage > 0 && percentage <= 100) {
+                        // 현재 테이블의 너비 정보에 추가
+                        tableWidthsRef.current.push(widthMatch[1])
+                        // {{30%}} 부분을 제거한 깔끔한 텍스트
+                        cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
+                      } else {
+                        // 잘못된 값이면 auto 추가
+                        tableWidthsRef.current.push('auto')
+                        cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
+                      }
+                    } else {
+                      // 너비 지정이 없으면 auto 추가
+                      tableWidthsRef.current.push('auto')
+                    }
+                    
                     // 안전한 기본값 설정
                     const defaultThStyle = {
                       border: '1px solid #ddd',
@@ -411,7 +461,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     
                     // 스타일이 존재하는지 확인
                     if (!style || !style.styles || !style.styles.th) {
-                      return <th style={defaultThStyle}>{children}</th>
+                      return <th style={defaultThStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
                     }
                     
                     const thStyle = style.styles.th as any
@@ -425,7 +475,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
                     }
                     
-                    return <th style={finalStyle}>{children}</th>
+                    return <th style={finalStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
                   },
                   td: ({ children }) => {
                     // 안전한 기본값 설정
@@ -438,7 +488,16 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     
                     // 스타일이 존재하는지 확인
                     if (!style || !style.styles || !style.styles.td) {
-                      return <td style={defaultTdStyle}>{children}</td>
+                      // TD에서도 width 적용 로직을 early return 이전에 실행
+                      let finalTdStyle = defaultTdStyle
+                      if (tableWidthsRef.current.length > 0 && columnIndexRef.current < tableWidthsRef.current.length) {
+                        const width = tableWidthsRef.current[columnIndexRef.current]
+                        if (width !== 'auto') {
+                          finalTdStyle = { ...defaultTdStyle, width: width, minWidth: '50px' }
+                        }
+                      }
+                      columnIndexRef.current++
+                      return <td style={finalTdStyle}>{children}</td>
                     }
                     
                     const tdStyle = style.styles.td as any
@@ -451,6 +510,20 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       const borderColor = tdStyle.borderColor || '#ddd'
                       finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
                     }
+
+                    // 현재 열에 해당하는 너비 적용
+                    if (tableWidthsRef.current.length > 0 && columnIndexRef.current < tableWidthsRef.current.length) {
+                      const width = tableWidthsRef.current[columnIndexRef.current]
+                      console.log(`TD DEBUG: width=${width}`)
+                      if (width !== 'auto') {
+                        finalStyle.width = width
+                        finalStyle.minWidth = '50px'
+                        console.log(`TD width applied: column ${columnIndexRef.current}, width ${width}`)
+                      }
+                    }
+                    
+                    // 다음 열로 이동
+                    columnIndexRef.current++
                     
                     return <td style={finalStyle}>{children}</td>
                   },
@@ -488,8 +561,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     console.log('Image src:', src, 'Type:', typeof src)
                     
                     const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-                      console.error('Image load error for src:', src)
-                      console.error('Error event:', e)
                       const img = e.target as HTMLImageElement
                       img.style.border = '2px dashed #ccc'
                       img.style.padding = '20px'
@@ -497,9 +568,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       img.alt = `[이미지 로드 실패: ${alt || src}]`
                     }
 
-                    const handleImageLoad = () => {
-                      console.log('Image loaded successfully:', src)
-                    }
+                    const handleImageLoad = () => {}
 
                     return (
                       <img 
