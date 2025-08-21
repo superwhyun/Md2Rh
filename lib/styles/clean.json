@@ -256,7 +256,7 @@
     "table": {
       "borderCollapse": "collapse",
       "width": "100%",
-      "margin": "1.5rem 0",
+      "margin": "1rem 0",
       "fontFamily": "system-ui, sans-serif",
       "fontSize": "0.95rem"
     },

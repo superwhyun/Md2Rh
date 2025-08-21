@@ -220,26 +220,17 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       <div className="bg-white shadow-lg" style={{
         width: '210mm',
         minHeight: '297mm',
-        padding: '0',
+        padding: '20mm',
         boxSizing: 'border-box',
         transform: 'scale(0.75)',
         transformOrigin: 'top center',
-        position: 'relative'
+        position: 'relative',
+        ...style.styles.body
       }}>
       <style>
         {generateULLevelCSS(ulLevels)}
         {generateOLLevelCSS(olLevels)}
       </style>
-      <div 
-        style={{ 
-          ...style.styles.body, 
-          padding: '10mm',
-          border: '1px dashed #ccc',
-          margin: '10mm',
-          minHeight: 'calc(297mm - 20mm)',
-          boxSizing: 'border-box',
-          overflow: 'visible'
-        }}>
 {processContentWithLinkCards(content).map((part, index) => {
           if (part.type === 'linkCard') {
             return <LinkCard key={index} url={part.content} />
@@ -461,7 +452,13 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                     
                     // 스타일이 존재하는지 확인
                     if (!style || !style.styles || !style.styles.th) {
-                      return <th style={defaultThStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
+                      let finalThStyle = defaultThStyle
+                      // 추출한 너비를 현재 헤더 셀에도 적용 (스타일 없는 경우)
+                      if (widthMatch && widthMatch[1] !== 'auto') {
+                        finalThStyle = { ...defaultThStyle, width: widthMatch[1], minWidth: '50px' }
+                        console.log(`TH width applied (no style): ${widthMatch[1]}`)
+                      }
+                      return <th style={finalThStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
                     }
                     
                     const thStyle = style.styles.th as any
@@ -473,6 +470,13 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       const borderStyle = thStyle.borderStyle || 'solid'  
                       const borderColor = thStyle.borderColor || '#ddd'
                       finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
+                    }
+                    
+                    // 추출한 너비를 현재 헤더 셀에도 적용
+                    if (widthMatch && widthMatch[1] !== 'auto') {
+                      finalStyle.width = widthMatch[1]
+                      finalStyle.minWidth = '50px'
+                      console.log(`TH width applied: ${widthMatch[1]}`)
                     }
                     
                     return <th style={finalStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
@@ -595,7 +599,6 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
             )
           }
         })}
-      </div>
       </div>
     </div>
   )

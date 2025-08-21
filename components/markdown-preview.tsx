@@ -152,6 +152,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
         // Blob URL만 Base64로 변환
         const convertedContent = await convertBlobImagesToBase64(allContent.innerHTML)
         
+        
         const printWindow = window.open('', '_blank')
         if (printWindow) {
           printWindow.document.write(`
@@ -162,7 +163,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                 <style>
                   @page {
                     size: A4;
-                    margin: 15mm;
+                    margin: 10mm 1.5mm;
                   }
                   body {
                     margin: 0;
@@ -170,11 +171,19 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
                   }
                   
+                  /* 모든 transform과 스케일링 효과 완전 제거 */
+                  * {
+                    transform: none !important;
+                    scale: none !important;
+                    zoom: 1 !important;
+                  }
+                  
                   /* 페이지별 스타일 */
                   .mx-auto {
                     margin: 0 !important;
                     padding: 0 !important;
                     width: 100% !important;
+                    max-width: none !important;
                     min-height: 100% !important;
                     transform: none !important;
                     box-shadow: none !important;
@@ -227,12 +236,16 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                   }
                   `}
                   
-                  /* 공통 내부 컨텐츠 영역 */
+                  /* 미리보기 영역을 프린트용으로 조정 */
                   .mx-auto > div {
-                    padding: 0 !important;
+                    padding: 10mm 2.5mm !important;
                     margin: 0 !important;
                     border: none !important;
                     min-height: auto !important;
+                    width: 100% !important;
+                    max-width: none !important;
+                    box-sizing: border-box !important;
+                    box-shadow: none !important;
                   }
                   @media print {
                     body {
@@ -253,16 +266,22 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                     border-collapse: collapse;
                     width: 100%;
                     margin: 1rem 0;
+                    table-layout: fixed !important;
                   }
                   th, td {
                     border: 1px solid #ddd;
                     padding: 8px;
                     text-align: left;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                    box-sizing: border-box;
                   }
                   th {
                     background-color: #f2f2f2;
                     font-weight: bold;
                   }
+                  
+                  
                   
                   /* 커스텀 UL 스타일 - 프린트용 강화 */
                   ul.custom-ul {
