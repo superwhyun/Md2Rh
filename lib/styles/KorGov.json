@@ -12,7 +12,7 @@
     "ulLevels": [
       {
         "marker": "o",
-        "fontSize": "1.1rem",
+        "fontSize": "1rem",
         "fontFamily": "'Nanum Myeongjo', serif",
         "fontWeight": "normal",
         "color": "inherit",
@@ -25,7 +25,7 @@
       },
       {
         "marker": "-",
-        "fontSize": "1.1rem",
+        "fontSize": "1rem",
         "fontFamily": "'NanumBarunGothic', sans-serif",
         "fontWeight": "normal",
         "color": "inherit",
@@ -51,7 +51,7 @@
       },
       {
         "marker": "▪",
-        "fontSize": "1.4rem",
+        "fontSize": "0.9rem",
         "fontFamily": "'Nanum Pen Script', cursive",
         "fontWeight": "normal",
         "color": "inherit",
@@ -64,7 +64,7 @@
       },
       {
         "marker": "‣",
-        "fontSize": "1rem",
+        "fontSize": "0.9rem",
         "fontFamily": "inherit",
         "fontWeight": "normal",
         "color": "inherit",
@@ -156,7 +156,7 @@
       "marginTop": "0",
       "marginBottom": "1.5rem",
       "lineHeight": "1.2",
-      "backgroundColor": "#000080",
+      "backgroundColor": "#808080",
       "fontFamily": "'NanumSquare', sans-serif",
       "padding": "12px"
     },

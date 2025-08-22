@@ -3,6 +3,7 @@
 import React from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeRaw from "rehype-raw"
 import type { DocumentStyle } from "@/lib/default-styles"
 import { extractDepthFromContent, cleanDepthMarkers } from "@/lib/list-depth-parser"
 import { parseTableWidths } from "@/lib/table-width-parser"
@@ -220,17 +221,26 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
       <div className="bg-white shadow-lg" style={{
         width: '210mm',
         minHeight: '297mm',
-        padding: '20mm',
+        padding: '0',
         boxSizing: 'border-box',
         transform: 'scale(0.75)',
         transformOrigin: 'top center',
-        position: 'relative',
-        ...style.styles.body
+        position: 'relative'
       }}>
       <style>
         {generateULLevelCSS(ulLevels)}
         {generateOLLevelCSS(olLevels)}
       </style>
+      <div 
+        style={{ 
+          ...style.styles.body, 
+          padding: '1.5mm',
+          border: '1px dashed #ccc',
+          margin: '12mm',
+          minHeight: 'calc(297mm - 24mm)',
+          boxSizing: 'border-box',
+          overflow: 'visible'
+        }}>
 {processContentWithLinkCards(content).map((part, index) => {
           if (part.type === 'linkCard') {
             return <LinkCard key={index} url={part.content} />
@@ -255,6 +265,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
               <ReactMarkdown
                 key={index}
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
                 components={{
                   h1: ({ children }) => <h1 style={style.styles.h1}>{children}</h1>,
                   h2: ({ children }) => <h2 style={style.styles.h2}>{children}</h2>,
@@ -592,6 +603,42 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
                       />
                     )
                   },
+                  aside: ({ children }) => {
+                    return (
+                      <div style={{
+                        backgroundColor: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderLeft: '4px solid #3b82f6',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        margin: '1.5rem 0',
+                        position: 'relative'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          color: '#3b82f6'
+                        }}>
+                          <span style={{
+                            marginRight: '0.5rem',
+                            fontSize: '1.1rem'
+                          }}>
+                            💡
+                          </span>
+                          Callout
+                        </div>
+                        <div style={{
+                          color: '#374151',
+                          lineHeight: '1.6'
+                        }}>
+                          {children}
+                        </div>
+                      </div>
+                    )
+                  },
                 }}
               >
                 {part.content}
@@ -599,6 +646,7 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
             )
           }
         })}
+      </div>
       </div>
     </div>
   )

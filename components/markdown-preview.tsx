@@ -163,7 +163,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                 <style>
                   @page {
                     size: A4;
-                    margin: 10mm 1.5mm;
+                    margin: 5mm 1.5mm;
                   }
                   body {
                     margin: 0;
@@ -237,15 +237,14 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
                   `}
                   
                   /* 미리보기 영역을 프린트용으로 조정 */
-                  .mx-auto > div {
-                    padding: 10mm 2.5mm !important;
+                  .mx-auto > div > div {
+                    padding: 0.5mm 1.5mm 15mm 1.5mm !important;
                     margin: 0 !important;
                     border: none !important;
                     min-height: auto !important;
                     width: 100% !important;
                     max-width: none !important;
                     box-sizing: border-box !important;
-                    box-shadow: none !important;
                   }
                   @media print {
                     body {
