@@ -7,8 +7,14 @@ import { StyleManager } from "@/components/style-manager"
 import { StyleSelector } from "@/components/style-selector"
 import { HelpModal } from "@/components/help-modal"
 import { Button } from "@/components/ui/button"
-import { Settings, Github, HelpCircle } from "lucide-react"
+import { Github, Settings, HelpCircle, FileText, LayoutTemplate, Printer, Download } from "lucide-react"
 import { type DocumentStyle, getDefaultStyles } from "@/lib/default-styles"
+import { ModeToggle } from "@/components/mode-toggle"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 
 export default function Home() {
   const [title, setTitle] = useState("")
@@ -63,8 +69,8 @@ export default function Home() {
 - Amnesty International 보고서: “YouTube and the Cycle of Extremism”  
 - MIT Technology Review: “The Algorithm that Radicalized the World”  
 - Oxford Internet Institute 연구: “Echo Chambers and Political Polarization on YouTube”  
-
 `)
+  const [coverFooter, setCoverFooter] = useState("")
 
   const [styles, setStyles] = useState<DocumentStyle[]>([])
   const [selectedStyleId, setSelectedStyleId] = useState<string>("")
@@ -76,12 +82,12 @@ export default function Home() {
     // 서버 기본 스타일과 로컬 커스텀 스타일 병합
     const defaultStyles = getDefaultStyles()
     const savedStyles = localStorage.getItem("documentStyles")
-    
+
     let mergedStyles = [...defaultStyles]
-    
+
     if (savedStyles) {
       const parsedStyles = JSON.parse(savedStyles) as DocumentStyle[]
-      
+
       // 로컬 스타일을 순회하면서 병합
       parsedStyles.forEach(localStyle => {
         const existingIndex = mergedStyles.findIndex(style => style.id === localStyle.id)
@@ -94,8 +100,7 @@ export default function Home() {
         }
       })
     }
-    
-    console.log('Merged styles:', mergedStyles.map(s => s.name))
+
     setStyles(mergedStyles)
     setSelectedStyleId(mergedStyles[0].id)
     localStorage.setItem("documentStyles", JSON.stringify(mergedStyles))
@@ -114,87 +119,141 @@ export default function Home() {
   const selectedStyle = tempStyle || styles.find((style) => style.id === selectedStyleId)
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 상단 툴바 */}
-      <div className="border-b bg-background p-4 flex items-center gap-4">
-        <Button variant="outline" onClick={() => setIsStyleManagerOpen(true)} className="flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          문서서식관리자
-        </Button>
+      {/* 상단 툴바 */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 flex items-center gap-4 shrink-0 z-50 shadow-sm relative">
+        <div className="flex items-center gap-2 mr-4">
+          <div className="bg-primary/10 p-2 rounded-lg text-primary">
+            <Settings className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="font-bold text-lg leading-none tracking-tight">Md2Rh Converter</h1>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Markdown to Report HTML</span>
+          </div>
+        </div>
 
-        <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={handleStyleSelect} />
-        
+        <div className="h-8 w-px bg-border/60 mx-2" />
+
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Design System</span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={isStyleManagerOpen ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setIsStyleManagerOpen(!isStyleManagerOpen)}
+                className="flex items-center gap-2 h-9 border border-transparent hover:border-border/50 transition-all font-medium"
+              >
+                <LayoutTemplate className="h-4 w-4" />
+                <span>서식 관리자</span>
+              </Button>
+
+              <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={handleStyleSelect} />
+            </div>
+          </div>
+        </div>
+
         <div className="flex-1" />
-        
-        <Button variant="ghost" size="sm" onClick={() => setIsHelpModalOpen(true)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-          <HelpCircle className="h-4 w-4" />
-          사용법
-        </Button>
-        
-        <Button variant="ghost" size="sm" asChild className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-          <a href="https://github.com/superwhyun/Md2Rh" target="_blank" rel="noopener noreferrer">
-            <Github className="h-4 w-4" />
-            GitHub
-          </a>
-        </Button>
+
+        <div className="flex items-center gap-1">
+          <ModeToggle />
+
+          <div className="w-px h-4 bg-border/60 mx-1" />
+
+          <Button variant="ghost" size="icon" onClick={() => setIsHelpModalOpen(true)} className="text-muted-foreground hover:text-foreground">
+            <HelpCircle className="h-5 w-5" />
+            <span className="sr-only">사용법</span>
+          </Button>
+
+          <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-foreground">
+            <a href="https://github.com/superwhyun/Md2Rh" target="_blank" rel="noopener noreferrer">
+              <Github className="h-5 w-5" />
+              <span className="sr-only">GitHub</span>
+            </a>
+          </Button>
+        </div>
       </div>
 
       {/* 메인 컨텐츠 영역 */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 왼쪽 사이드바 - 서식 관리자 */}
-        {isStyleManagerOpen && (
-          <div className="w-96 border-r bg-background flex-shrink-0 overflow-auto">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">문서 서식 관리자</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsStyleManagerOpen(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  ✕
-                </Button>
-              </div>
-              <StyleManager
-                isOpen={true}
-                onClose={() => {
-                  setIsStyleManagerOpen(false)
-                  setTempStyle(null) // 사이드바 닫을 때 임시 스타일 초기화
-                }}
-                styles={styles}
-                onStylesUpdate={handleStylesUpdate}
-                selectedStyleId={selectedStyleId}
-                onStyleSelect={handleStyleSelect}
-                isSidebar={true}
-                onTempStyleUpdate={setTempStyle} // 실시간 업데이트를 위한 콜백
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal">
+          {isStyleManagerOpen && (
+            <>
+              <ResizablePanel
+                id="sidebar"
+                order={1}
+                defaultSize={25}
+                minSize={20}
+                maxSize={40}
+                className="bg-background"
+              >
+                <div className="h-full flex flex-col border-r">
+                  <div className="p-4 border-b flex items-center justify-between bg-muted/30">
+                    <h2 className="font-semibold">문서 서식 관리자</h2>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      setIsStyleManagerOpen(false)
+                    }}>
+                      ✕
+                    </Button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4">
+                    <StyleManager
+                      isOpen={true}
+                      onClose={() => {
+                        setIsStyleManagerOpen(false)
+                        setTempStyle(null)
+                      }}
+                      styles={styles}
+                      onStylesUpdate={handleStylesUpdate}
+                      selectedStyleId={selectedStyleId}
+                      onStyleSelect={handleStyleSelect}
+                      isSidebar={true}
+                      onTempStyleUpdate={setTempStyle}
+                    />
+                  </div>
+                </div>
+              </ResizablePanel>
+              <ResizableHandle />
+            </>
+          )}
+
+          <ResizablePanel id="editor" order={2} defaultSize={isStyleManagerOpen ? 35 : 50} minSize={25}>
+            <div className="h-full flex flex-col border-r bg-background">
+              <MarkdownEditor
+                value={markdown}
+                onChange={setMarkdown}
+                title={title}
+                onTitleChange={setTitle}
+                coverFooter={coverFooter}
+                onCoverFooterChange={setCoverFooter}
               />
             </div>
-          </div>
-        )}
+          </ResizablePanel>
 
-        {/* 중앙 패널 - 마크다운 에디터 (가변 크기) */}
-        <div className="flex-1 border-r flex flex-col overflow-hidden min-w-0">
-          <MarkdownEditor 
-            value={markdown} 
-            onChange={setMarkdown}
-            title={title}
-            onTitleChange={setTitle}
-          />
-        </div>
+          <ResizableHandle />
 
-        {/* 오른쪽 패널 - 미리보기 (고정 크기) */}
-        <div className="flex-shrink-0 flex flex-col overflow-hidden" style={{ width: '680px', minWidth: '680px', maxWidth: '680px' }}>
-          <MarkdownPreview 
-            markdown={markdown} 
-            style={selectedStyle}
-            title={title}
-          />
-        </div>
+          <ResizablePanel id="preview" order={3} defaultSize={isStyleManagerOpen ? 40 : 50} minSize={30}>
+            <div className="h-full flex flex-col bg-muted/20 overflow-hidden">
+              {/* Preview needs to handle its own scrolling */}
+              <div className="flex-1 overflow-auto p-4 flex justify-center">
+                <div className="origin-top scale-[0.8] sm:scale-[0.85] md:scale-[0.9] lg:scale-[1.0] transition-transform">
+                  {/* Scale wrapper to fit A4 roughly or let user zoom? For now defaults are fine */}
+                  <MarkdownPreview
+                    markdown={markdown}
+                    style={selectedStyle}
+                    title={title}
+                    coverFooter={coverFooter}
+                  />
+                </div>
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
 
       {/* 사용법 모달 */}
-      <HelpModal 
+      <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
       />

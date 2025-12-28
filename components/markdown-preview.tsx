@@ -6,23 +6,28 @@ import { addNumberingToMarkdown } from "@/lib/numbering"
 import { detectStandaloneLinks } from "@/lib/markdown-processor"
 import { parseListDepth } from "@/lib/list-depth-parser"
 import { PaginatedPreview } from "@/components/paginated-preview"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { Printer } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface MarkdownPreviewProps {
   markdown: string
   style?: DocumentStyle
   title?: string
+  coverFooter?: string
 }
 
-export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps) {
+export function MarkdownPreview({ markdown, style, title, coverFooter }: MarkdownPreviewProps) {
   const renderTitlePage = () => {
     if (!title?.trim()) return null
-    
+
     const today = new Date().toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     })
-    
+
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         <div className="bg-white shadow-lg" style={{
@@ -34,40 +39,65 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
           transformOrigin: 'top center',
           position: 'relative'
         }}>
-        <div style={{
-          ...style?.styles.body,
-          padding: '10mm',
-          border: '1px dashed #ccc',
-          margin: '10mm',
-          height: 'calc(297mm - 20mm)',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          paddingTop: '15%'
-        }}>
-          <h1 style={{
-            ...style?.styles.h1,
-            fontSize: '2.5rem',
-            fontWeight: 'bold',
-            marginBottom: '0',
-            lineHeight: '1.1',
-            flex: 'none'
+          <div style={{
+            ...style?.styles.body,
+            padding: '10mm',
+            border: '1px dashed #ccc',
+            margin: '10mm',
+            height: 'calc(297mm - 20mm)',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            paddingTop: '15%'
           }}>
-            {title}
-          </h1>
-          <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
-            <p style={{
-              ...style?.styles.p,
-              fontSize: '1.5rem',
-              color: '#666',
-              margin: '0'
+            <h1 style={{
+              ...style?.styles.h1,
+              fontSize: '2.5rem',
+              fontWeight: 'bold',
+              marginBottom: '0',
+              lineHeight: '1.1',
+              flex: 'none'
             }}>
-              {today}
-            </p>
+              {title}
+            </h1>
+            <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+              <p style={{
+                ...style?.styles.p,
+                fontSize: '1.5rem',
+                color: '#666',
+                margin: '0'
+              }}>
+                {today}
+              </p>
+            </div>
+            {coverFooter && (
+              <div style={{ flex: 'none', width: '100%', marginTop: 'auto', textAlign: 'left', paddingTop: '40px' }}>
+                <div style={{ ...style?.styles.p, fontSize: '1rem', color: '#444' }}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({ node, ...props }) => <p style={{ marginBottom: '0.5em', ...style?.styles.p }} {...props} />,
+                      strong: ({ node, ...props }) => <strong style={{ fontWeight: 'bold' }} {...props} />,
+                      em: ({ node, ...props }) => <em style={{ fontStyle: 'italic' }} {...props} />,
+                      ul: ({ node, ...props }) => <ul style={{ listStyleType: 'disc', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
+                      ol: ({ node, ...props }) => <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
+                      li: ({ node, ...props }) => <li style={{ marginBottom: '0.2em' }} {...props} />,
+                      table: ({ node, ...props }) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '1em', fontSize: '0.9em', ...style?.styles.table }} {...props} />,
+                      thead: ({ node, ...props }) => <thead style={{ backgroundColor: '#f8f9fa' }} {...props} />,
+                      tbody: ({ node, ...props }) => <tbody {...props} />,
+                      tr: ({ node, ...props }) => <tr style={{ borderBottom: '1px solid #ddd' }} {...props} />,
+                      th: ({ node, ...props }) => <th style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold', textAlign: 'left', ...style?.styles.th }} {...props} />,
+                      td: ({ node, ...props }) => <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', ...style?.styles.td }} {...props} />
+                    }}
+                  >
+                    {coverFooter}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
         </div>
       </div>
     )
@@ -80,18 +110,18 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
       setIsPrinting(true)
       // 전체 프린트 영역 추출 (타이틀 페이지 + 본문 모두 포함)
       const allContent = printRef.current
-      
+
       // 현재 페이지의 모든 스타일 추출
       const styleElement = printRef.current.querySelector('style')
       let customCSS = styleElement ? styleElement.textContent : ''
-      
+
       // 타이틀 유무 확인
       const hasTitle = !!title?.trim()
-      
+
       // 페이지의 모든 CSS 스타일시트 추출
       const allStylesheets = Array.from(document.styleSheets)
       let additionalCSS = ''
-      
+
       try {
         allStylesheets.forEach(stylesheet => {
           try {
@@ -113,7 +143,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
         const tempDiv = document.createElement('div')
         tempDiv.innerHTML = htmlContent
         const images = tempDiv.querySelectorAll('img')
-        
+
         const promises = Array.from(images).map(async (img) => {
           try {
             if (img.src && img.src.startsWith('blob:')) {
@@ -140,19 +170,19 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
             console.warn('Image conversion error:', e)
           }
         })
-        
+
         await Promise.all(promises)
         return tempDiv.innerHTML
       }
-      
+
       // text-indent 스타일이 제대로 전달되도록 수정 (모든 em 값에 대해)
       customCSS = customCSS.replace(/text-indent:\s*-[\d\.]+em/g, (match) => match + ' !important')
-      
+
       if (allContent) {
         // Blob URL만 Base64로 변환
         const convertedContent = await convertBlobImagesToBase64(allContent.innerHTML)
-        
-        
+
+
         const printWindow = window.open('', '_blank')
         if (printWindow) {
           printWindow.document.write(`
@@ -366,7 +396,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
             </html>
           `)
           printWindow.document.close()
-          
+
           // 이미지 로딩 완료를 기다린 후 프린트
           const images = printWindow.document.querySelectorAll('img')
           const imagePromises = Array.from(images).map(img => {
@@ -381,14 +411,14 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
               }
             })
           })
-          
+
           console.log(`Waiting for ${images.length} images to load...`)
-          
+
           // 모든 이미지 로딩 완료 후 프린트
           Promise.all(imagePromises).then(() => {
             console.log('All images loaded, starting print...')
             printWindow.focus()
-            
+
             // 조금 더 대기 후 프린트 (렌더링 완료 보장)
             setTimeout(() => {
               printWindow.print()
@@ -397,7 +427,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
           })
         }
       }
-      
+
       setIsPrinting(false)
     }
   }
@@ -412,7 +442,7 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
 
   // 독립적인 링크 감지 및 처리
   const { text: linkProcessedMarkdown } = detectStandaloneLinks(markdown)
-  
+
   const numberedMarkdown = addNumberingToMarkdown(
     linkProcessedMarkdown,
     style.headingNumbering?.h1 || 'number',
@@ -426,24 +456,42 @@ export function MarkdownPreview({ markdown, style, title }: MarkdownPreviewProps
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b bg-muted/50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold">문서 미리보기</h2>
-            <p className="text-sm text-muted-foreground">현재 스타일: {style.name}</p>
+      <div className="bg-background border-b z-10 shrink-0">
+        <div className="p-4 flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block ml-1">
+              Live Preview
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm bg-secondary/50 px-2 py-1 rounded text-secondary-foreground">
+                {style?.name || '기본 서식'}
+              </span>
+            </div>
           </div>
-          <button
-            onClick={handlePrint}
-            disabled={isPrinting}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            {isPrinting ? '프린트 준비 중...' : '프린트 하기'}
-          </button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handlePrint}
+              disabled={isPrinting}
+              variant="default"
+              size="sm"
+              className="gap-2 shadow-sm"
+            >
+              {isPrinting ? (
+                <>준비 중...</>
+              ) : (
+                <>
+                  <Printer className="h-4 w-4" />
+                  <span>인쇄 / PDF 저장</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-100" style={{ padding: '20px 0', width: '680px', minWidth: '680px', maxWidth: '680px' }}>
-        <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minWidth: '680px' }}>
+      <div className="flex-1 overflow-auto bg-gray-100 dark:bg-muted/10 w-full" style={{ padding: '20px 0' }}>
+        <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           {renderTitlePage()}
           <PaginatedPreview content={finalMarkdown} style={style} />
         </div>
