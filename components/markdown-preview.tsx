@@ -8,7 +8,7 @@ import { parseListDepth } from "@/lib/list-depth-parser"
 import { PaginatedPreview } from "@/components/paginated-preview"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { Printer } from "lucide-react"
+import { Printer, Highlighter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface MarkdownPreviewProps {
@@ -16,9 +16,78 @@ interface MarkdownPreviewProps {
   style?: DocumentStyle
   title?: string
   coverFooter?: string
+  onMarkdownChange?: (markdown: string) => void
 }
 
-export function MarkdownPreview({ markdown, style, title, coverFooter }: MarkdownPreviewProps) {
+export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdownChange }: MarkdownPreviewProps) {
+  const [highlightColor, setHighlightColor] = useState("#ffff00")
+  const [isHighlightMode, setIsHighlightMode] = useState(false)
+
+  const handleHighlight = () => {
+    if (!onMarkdownChange) return
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return
+
+    const text = selection.toString()
+    if (!text.trim()) return
+
+    // 보색 계산
+    const hex = highlightColor.replace('#', '')
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+
+    const compR = 255 - r
+    const compG = 255 - g
+    const compB = 255 - b
+
+    const textColor = `rgb(${compR}, ${compG}, ${compB})`
+    const span = `<span style="background-color: ${highlightColor}; color: ${textColor};">${text}</span>`
+
+    // 문맥 기반 찾기
+    let contextBefore = ""
+    let contextAfter = ""
+    const anchor = selection.anchorNode
+
+    if (anchor && anchor.nodeType === 3) { // Text node
+      const fullText = anchor.textContent || ""
+      const range = selection.getRangeAt(0)
+
+      if (range.startContainer === anchor) {
+        const start = Math.max(0, range.startOffset - 15)
+        contextBefore = fullText.substring(start, range.startOffset)
+
+        const end = Math.min(fullText.length, range.endOffset + 15)
+        contextAfter = fullText.substring(range.endOffset, end)
+      }
+    }
+
+    const searchPattern = contextBefore + text + contextAfter
+
+    if (markdown.includes(searchPattern)) {
+      const replacement = contextBefore + span + contextAfter
+      onMarkdownChange(markdown.replace(searchPattern, replacement))
+      selection.removeAllRanges()
+    } else if (markdown.includes(text)) {
+      const splits = markdown.split(text)
+      if (splits.length === 2) {
+        onMarkdownChange(markdown.replace(text, span))
+        selection.removeAllRanges()
+      } else {
+        alert("선택한 텍스트가 여러 번 발견되어 정확한 위치를 찾을 수 없습니다. 주변 문맥을 더 포함하여 선택해주세요.")
+      }
+    } else {
+      alert("원본 텍스트를 찾을 수 없습니다. (서식이 포함된 텍스트는 하이라이트할 수 없습니다)")
+    }
+  }
+
+  const handleMouseUp = () => {
+    if (isHighlightMode) {
+      // 텍스트 선택이 완료된 시점에 약간의 딜레이를 주어 selection이 정확히 잡히도록 함
+      setTimeout(handleHighlight, 10)
+    }
+  }
+
   const renderTitlePage = () => {
     if (!title?.trim()) return null
 
@@ -475,6 +544,25 @@ export function MarkdownPreview({ markdown, style, title, coverFooter }: Markdow
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-md mr-2">
+              <input
+                type="color"
+                value={highlightColor}
+                onChange={(e) => setHighlightColor(e.target.value)}
+                className="w-6 h-6 p-0 border-0 rounded cursor-pointer overflow-hidden"
+                title="하이라이트 색상"
+              />
+              <Button
+                onClick={() => setIsHighlightMode(!isHighlightMode)}
+                variant={isHighlightMode ? "secondary" : "ghost"}
+                size="sm"
+                className={`h-8 w-8 p-0 ${isHighlightMode ? "bg-accent text-accent-foreground ring-2 ring-primary" : "hover:bg-secondary/50"}`}
+                title={isHighlightMode ? "하이라이트 모드 끄기" : "하이라이트 모드 켜기 (선택 시 자동 적용)"}
+              >
+                <Highlighter className="h-4 w-4" style={{ color: highlightColor }} />
+              </Button>
+            </div>
+
             <Button
               onClick={handlePrint}
               disabled={isPrinting}
@@ -495,7 +583,11 @@ export function MarkdownPreview({ markdown, style, title, coverFooter }: Markdow
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-100 dark:bg-muted/10 w-full" style={{ padding: '20px 0' }}>
+      <div
+        className="flex-1 overflow-auto bg-gray-100 dark:bg-muted/10 w-full"
+        style={{ padding: '20px 0' }}
+        onMouseUp={handleMouseUp}
+      >
         <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           {renderTitlePage()}
           <PaginatedPreview content={finalMarkdown} style={style} />

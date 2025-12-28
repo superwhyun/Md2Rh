@@ -233,6 +233,7 @@ export default function Home() {
           <div className="flex-1 overflow-hidden relative">
             <MarkdownPreview
               markdown={markdown}
+              onMarkdownChange={setMarkdown}
               style={selectedStyle}
               title={title}
               coverFooter={coverFooter}
