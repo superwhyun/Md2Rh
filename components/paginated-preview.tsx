@@ -219,432 +219,434 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-      <div className="bg-white shadow-lg" style={{
-        width: '210mm',
-        minHeight: '297mm',
-        padding: '0',
-        boxSizing: 'border-box',
-        transform: 'scale(0.75)',
-        transformOrigin: 'top center',
-        position: 'relative'
-      }}>
-        <style>
-          {generateULLevelCSS(ulLevels)}
-          {generateOLLevelCSS(olLevels)}
-        </style>
-        <div
-          style={{
-            ...style.styles.body,
-            padding: '1.5mm',
-            border: '1px dashed #ccc',
-            margin: '12mm',
-            minHeight: 'calc(297mm - 24mm)',
-            boxSizing: 'border-box',
-            overflow: 'visible'
-          }}>
-          {processContentWithLinkCards(content).map((part, index) => {
-            if (part.type === 'linkCard') {
-              return <LinkCard key={index} url={part.content} />
-            } else if (part.type === 'blobImage') {
-              return (
-                <img
-                  key={index}
-                  src={part.src}
-                  alt={part.alt || ''}
-                  style={{
-                    maxWidth: '100%',
-                    height: 'auto',
-                    margin: '1rem 0',
-                    display: 'block'
-                  }}
-                  onError={(e) => { }}
-                  onLoad={() => { }}
-                />
-              )
-            } else {
-              return (
-                <ReactMarkdown
-                  key={index}
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    h1: ({ children }) => <h1 style={style.styles.h1}>{children}</h1>,
-                    h2: ({ children }) => <h2 style={style.styles.h2}>{children}</h2>,
-                    h3: ({ children }) => <h3 style={style.styles.h3}>{children}</h3>,
-                    h4: ({ children }) => <h4 style={style.styles.h4}>{children}</h4>,
-                    h5: ({ children }) => <h5 style={style.styles.h5}>{children}</h5>,
-                    h6: ({ children }) => <h6 style={style.styles.h6}>{children}</h6>,
-                    p: ({ children, node }) => {
-                      // li 태그 내부의 p 태그인지 확인
-                      const isInListItem = node?.parent?.tagName === 'li'
-                      const pStyle = isInListItem
-                        ? { ...style.styles.p, margin: '0.2rem 0' }
-                        : style.styles.p
-                      return <p style={pStyle}>{children}</p>
-                    },
-                    blockquote: ({ children }) => <blockquote style={style.styles.blockquote}>{children}</blockquote>,
-                    ul: ({ children }) => {
-                      // 첫 번째 레벨(depth 0)의 bottomMargin 사용
-                      const bottomMargin = ulLevels[0]?.bottomMargin || '1rem'
+      <div style={{ width: '157.5mm', overflow: 'hidden' }}>
+        <div className="bg-white shadow-lg" style={{
+          width: '210mm',
+          minHeight: '297mm',
+          padding: '0',
+          boxSizing: 'border-box',
+          transform: 'scale(0.75)',
+          transformOrigin: 'top left',
+          position: 'relative'
+        }}>
+          <style>
+            {generateULLevelCSS(ulLevels)}
+            {generateOLLevelCSS(olLevels)}
+          </style>
+          <div
+            style={{
+              ...style.styles.body,
+              padding: '1.5mm',
+              border: '1px dashed #ccc',
+              margin: '12mm',
+              minHeight: 'calc(297mm - 24mm)',
+              boxSizing: 'border-box',
+              overflow: 'visible'
+            }}>
+            {processContentWithLinkCards(content).map((part, index) => {
+              if (part.type === 'linkCard') {
+                return <LinkCard key={index} url={part.content} />
+              } else if (part.type === 'blobImage') {
+                return (
+                  <img
+                    key={index}
+                    src={part.src}
+                    alt={part.alt || ''}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      margin: '1rem 0',
+                      display: 'block'
+                    }}
+                    onError={(e) => { }}
+                    onLoad={() => { }}
+                  />
+                )
+              } else {
+                return (
+                  <ReactMarkdown
+                    key={index}
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      h1: ({ children }) => <h1 style={style.styles.h1}>{children}</h1>,
+                      h2: ({ children }) => <h2 style={style.styles.h2}>{children}</h2>,
+                      h3: ({ children }) => <h3 style={style.styles.h3}>{children}</h3>,
+                      h4: ({ children }) => <h4 style={style.styles.h4}>{children}</h4>,
+                      h5: ({ children }) => <h5 style={style.styles.h5}>{children}</h5>,
+                      h6: ({ children }) => <h6 style={style.styles.h6}>{children}</h6>,
+                      p: ({ children, node }) => {
+                        // li 태그 내부의 p 태그인지 확인
+                        const isInListItem = node?.parent?.tagName === 'li'
+                        const pStyle = isInListItem
+                          ? { ...style.styles.p, margin: '0.2rem 0' }
+                          : style.styles.p
+                        return <p style={pStyle}>{children}</p>
+                      },
+                      blockquote: ({ children }) => <blockquote style={style.styles.blockquote}>{children}</blockquote>,
+                      ul: ({ children }) => {
+                        // 첫 번째 레벨(depth 0)의 bottomMargin 사용
+                        const bottomMargin = ulLevels[0]?.bottomMargin || '1rem'
 
-                      // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
-                      const hasLooseItems = React.Children.toArray(children).some(child => {
-                        if (React.isValidElement(child) && child.type === 'li') {
-                          return React.Children.toArray(child.props.children).some(grandchild =>
-                            React.isValidElement(grandchild) && grandchild.type === 'p'
-                          )
-                        }
-                        return false
-                      })
-
-                      // loose list일 때는 bottomMargin을 절반으로 줄임
-                      const adjustedBottomMargin = hasLooseItems
-                        ? `${parseFloat(bottomMargin) / 2}rem`
-                        : bottomMargin
-
-                      return (
-                        <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ul">
-                          {React.Children.map(children, (child) => {
-                            return React.isValidElement(child)
-                              ? React.cloneElement(child, { 'data-ul': true })
-                              : child
-                          })}
-                        </ul>
-                      )
-                    },
-                    ol: ({ children }) => {
-                      // 첫 번째 레벨(depth 0)의 bottomMargin 사용
-                      const bottomMargin = olLevels[0]?.bottomMargin || '1rem'
-
-                      // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
-                      const hasLooseItems = React.Children.toArray(children).some(child => {
-                        if (React.isValidElement(child) && child.type === 'li') {
-                          return React.Children.toArray(child.props.children).some(grandchild =>
-                            React.isValidElement(grandchild) && grandchild.type === 'p'
-                          )
-                        }
-                        return false
-                      })
-
-                      // loose list일 때는 bottomMargin을 절반으로 줄임
-                      const adjustedBottomMargin = hasLooseItems
-                        ? `${parseFloat(bottomMargin) / 2}rem`
-                        : bottomMargin
-
-                      return (
-                        <ol style={{ ...style.styles.ol, listStyle: 'decimal', margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ol">
-                          {React.Children.map(children, (child) => {
-                            return React.isValidElement(child)
-                              ? React.cloneElement(child, { 'data-ol': true })
-                              : child
-                          })}
-                        </ol>
-                      )
-                    },
-                    li: ({ children, ...props }) => {
-                      const isOrderedList = props['data-ol']
-                      if (isOrderedList) {
-                        const firstChild = React.Children.toArray(children)[0]
-                        let depth = 0
-                        if (typeof firstChild === 'string') {
-                          depth = extractDepthFromContent(firstChild)
-                        } else if (React.isValidElement(firstChild) && firstChild.props.children) {
-                          const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
-                          depth = extractDepthFromContent(text)
-                        }
-                        const cleanedChildren = React.Children.map(children, (child) => {
-                          if (typeof child === 'string') {
-                            return cleanDepthMarkers(child)
+                        // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
+                        const hasLooseItems = React.Children.toArray(children).some(child => {
+                          if (React.isValidElement(child) && child.type === 'li') {
+                            return React.Children.toArray(child.props.children).some(grandchild =>
+                              React.isValidElement(grandchild) && grandchild.type === 'p'
+                            )
                           }
-                          if (React.isValidElement(child)) {
-                            return React.cloneElement(child, {
-                              ...child.props,
-                              children: typeof child.props.children === 'string'
-                                ? cleanDepthMarkers(child.props.children)
-                                : React.Children.map(child.props.children, (grandchild) =>
-                                  typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
-                                )
-                            })
-                          }
-                          return child
+                          return false
                         })
-                        return <li style={style.styles.li} className={`ol-level-${depth}`}>{cleanedChildren}</li>
-                      } else {
-                        const firstChild = React.Children.toArray(children)[0]
-                        let depth = 0
-                        if (typeof firstChild === 'string') {
-                          depth = extractDepthFromContent(firstChild)
-                        } else if (React.isValidElement(firstChild) && firstChild.props.children) {
-                          const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
-                          depth = extractDepthFromContent(text)
-                        }
-                        const cleanedChildren = React.Children.map(children, (child) => {
-                          if (typeof child === 'string') {
-                            return cleanDepthMarkers(child)
+
+                        // loose list일 때는 bottomMargin을 절반으로 줄임
+                        const adjustedBottomMargin = hasLooseItems
+                          ? `${parseFloat(bottomMargin) / 2}rem`
+                          : bottomMargin
+
+                        return (
+                          <ul style={{ ...style.styles.ul, listStyleType: 'none', padding: 0, margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ul">
+                            {React.Children.map(children, (child) => {
+                              return React.isValidElement(child)
+                                ? React.cloneElement(child, { 'data-ul': true })
+                                : child
+                            })}
+                          </ul>
+                        )
+                      },
+                      ol: ({ children }) => {
+                        // 첫 번째 레벨(depth 0)의 bottomMargin 사용
+                        const bottomMargin = olLevels[0]?.bottomMargin || '1rem'
+
+                        // loose list 감지: 자식 중에 p 태그가 있는 li가 있는지 확인
+                        const hasLooseItems = React.Children.toArray(children).some(child => {
+                          if (React.isValidElement(child) && child.type === 'li') {
+                            return React.Children.toArray(child.props.children).some(grandchild =>
+                              React.isValidElement(grandchild) && grandchild.type === 'p'
+                            )
                           }
-                          if (React.isValidElement(child)) {
-                            return React.cloneElement(child, {
-                              ...child.props,
-                              children: typeof child.props.children === 'string'
-                                ? cleanDepthMarkers(child.props.children)
-                                : React.Children.map(child.props.children, (grandchild) =>
-                                  typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
-                                )
-                            })
-                          }
-                          return child
+                          return false
                         })
-                        return <li style={style.styles.li} className={`ul-level-${depth}`}>{cleanedChildren}</li>
-                      }
-                    },
-                    table: ({ children }) => {
-                      // 새 테이블 시작 시 너비 정보 초기화
-                      tableWidthsRef.current = []
-                      columnIndexRef.current = 0
 
-                      return (
-                        <table style={{
-                          ...style.styles.table,
-                          tableLayout: 'fixed' // 정확한 너비 적용을 위해 필요
-                        }}>
-                          {children}
-                        </table>
-                      )
-                    },
-                    thead: ({ children }) => <thead>{children}</thead>,
-                    tbody: ({ children }) => <tbody>{children}</tbody>,
-                    tr: ({ children }) => {
-                      // 새 행 시작 시 열 인덱스 리셋
-                      columnIndexRef.current = 0
-                      return <tr>{children}</tr>
-                    },
-                    th: ({ children }) => {
+                        // loose list일 때는 bottomMargin을 절반으로 줄임
+                        const adjustedBottomMargin = hasLooseItems
+                          ? `${parseFloat(bottomMargin) / 2}rem`
+                          : bottomMargin
 
-                      // 파서 로직을 먼저 실행 (스타일 체크 이전에)
-                      const childrenStr = React.Children.toArray(children).map(child => {
-                        if (typeof child === 'string') return child
-                        if (typeof child === 'number') return child.toString()
-                        if (React.isValidElement(child)) {
-                          // React 엘리먼트인 경우 props.children을 확인
-                          return child.props?.children || ''
-                        }
-                        return ''
-                      }).join('')
-
-                      // 파서를 사용해서 너비 정보 추출
-                      const widthMatch = childrenStr.match(/\{\{(\d+(?:\.\d+)?%)\}\}/)
-                      let cleanChildren = childrenStr
-
-                      if (widthMatch) {
-                        const percentage = parseFloat(widthMatch[1].replace('%', ''))
-                        if (percentage > 0 && percentage <= 100) {
-                          // 현재 테이블의 너비 정보에 추가
-                          tableWidthsRef.current.push(widthMatch[1])
-                          // {{30%}} 부분을 제거한 깔끔한 텍스트
-                          cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
+                        return (
+                          <ol style={{ ...style.styles.ol, listStyle: 'decimal', margin: `0 0 ${adjustedBottomMargin} 0` }} className="custom-ol">
+                            {React.Children.map(children, (child) => {
+                              return React.isValidElement(child)
+                                ? React.cloneElement(child, { 'data-ol': true })
+                                : child
+                            })}
+                          </ol>
+                        )
+                      },
+                      li: ({ children, ...props }) => {
+                        const isOrderedList = props['data-ol']
+                        if (isOrderedList) {
+                          const firstChild = React.Children.toArray(children)[0]
+                          let depth = 0
+                          if (typeof firstChild === 'string') {
+                            depth = extractDepthFromContent(firstChild)
+                          } else if (React.isValidElement(firstChild) && firstChild.props.children) {
+                            const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
+                            depth = extractDepthFromContent(text)
+                          }
+                          const cleanedChildren = React.Children.map(children, (child) => {
+                            if (typeof child === 'string') {
+                              return cleanDepthMarkers(child)
+                            }
+                            if (React.isValidElement(child)) {
+                              return React.cloneElement(child, {
+                                ...child.props,
+                                children: typeof child.props.children === 'string'
+                                  ? cleanDepthMarkers(child.props.children)
+                                  : React.Children.map(child.props.children, (grandchild) =>
+                                    typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
+                                  )
+                              })
+                            }
+                            return child
+                          })
+                          return <li style={style.styles.li} className={`ol-level-${depth}`}>{cleanedChildren}</li>
                         } else {
-                          // 잘못된 값이면 auto 추가
+                          const firstChild = React.Children.toArray(children)[0]
+                          let depth = 0
+                          if (typeof firstChild === 'string') {
+                            depth = extractDepthFromContent(firstChild)
+                          } else if (React.isValidElement(firstChild) && firstChild.props.children) {
+                            const text = typeof firstChild.props.children === 'string' ? firstChild.props.children : ''
+                            depth = extractDepthFromContent(text)
+                          }
+                          const cleanedChildren = React.Children.map(children, (child) => {
+                            if (typeof child === 'string') {
+                              return cleanDepthMarkers(child)
+                            }
+                            if (React.isValidElement(child)) {
+                              return React.cloneElement(child, {
+                                ...child.props,
+                                children: typeof child.props.children === 'string'
+                                  ? cleanDepthMarkers(child.props.children)
+                                  : React.Children.map(child.props.children, (grandchild) =>
+                                    typeof grandchild === 'string' ? cleanDepthMarkers(grandchild) : grandchild
+                                  )
+                              })
+                            }
+                            return child
+                          })
+                          return <li style={style.styles.li} className={`ul-level-${depth}`}>{cleanedChildren}</li>
+                        }
+                      },
+                      table: ({ children }) => {
+                        // 새 테이블 시작 시 너비 정보 초기화
+                        tableWidthsRef.current = []
+                        columnIndexRef.current = 0
+
+                        return (
+                          <table style={{
+                            ...style.styles.table,
+                            tableLayout: 'fixed' // 정확한 너비 적용을 위해 필요
+                          }}>
+                            {children}
+                          </table>
+                        )
+                      },
+                      thead: ({ children }) => <thead>{children}</thead>,
+                      tbody: ({ children }) => <tbody>{children}</tbody>,
+                      tr: ({ children }) => {
+                        // 새 행 시작 시 열 인덱스 리셋
+                        columnIndexRef.current = 0
+                        return <tr>{children}</tr>
+                      },
+                      th: ({ children }) => {
+
+                        // 파서 로직을 먼저 실행 (스타일 체크 이전에)
+                        const childrenStr = React.Children.toArray(children).map(child => {
+                          if (typeof child === 'string') return child
+                          if (typeof child === 'number') return child.toString()
+                          if (React.isValidElement(child)) {
+                            // React 엘리먼트인 경우 props.children을 확인
+                            return child.props?.children || ''
+                          }
+                          return ''
+                        }).join('')
+
+                        // 파서를 사용해서 너비 정보 추출
+                        const widthMatch = childrenStr.match(/\{\{(\d+(?:\.\d+)?%)\}\}/)
+                        let cleanChildren = childrenStr
+
+                        if (widthMatch) {
+                          const percentage = parseFloat(widthMatch[1].replace('%', ''))
+                          if (percentage > 0 && percentage <= 100) {
+                            // 현재 테이블의 너비 정보에 추가
+                            tableWidthsRef.current.push(widthMatch[1])
+                            // {{30%}} 부분을 제거한 깔끔한 텍스트
+                            cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
+                          } else {
+                            // 잘못된 값이면 auto 추가
+                            tableWidthsRef.current.push('auto')
+                            cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
+                          }
+                        } else {
+                          // 너비 지정이 없으면 auto 추가
                           tableWidthsRef.current.push('auto')
-                          cleanChildren = childrenStr.replace(/\{\{(\d+(?:\.\d+)?%)\}\}/, '').trim()
                         }
-                      } else {
-                        // 너비 지정이 없으면 auto 추가
-                        tableWidthsRef.current.push('auto')
-                      }
 
-                      // 안전한 기본값 설정
-                      const defaultThStyle = {
-                        border: '1px solid #ddd',
-                        padding: '8px',
-                        backgroundColor: '#f2f2f2',
-                        fontWeight: 'bold',
-                        textAlign: 'left',
-                        verticalAlign: 'middle'
-                      }
+                        // 안전한 기본값 설정
+                        const defaultThStyle = {
+                          border: '1px solid #ddd',
+                          padding: '8px',
+                          backgroundColor: '#f2f2f2',
+                          fontWeight: 'bold',
+                          textAlign: 'left',
+                          verticalAlign: 'middle'
+                        }
 
-                      // 스타일이 존재하는지 확인
-                      if (!style || !style.styles || !style.styles.th) {
-                        let finalThStyle = defaultThStyle
-                        // 추출한 너비를 현재 헤더 셀에도 적용 (스타일 없는 경우)
+                        // 스타일이 존재하는지 확인
+                        if (!style || !style.styles || !style.styles.th) {
+                          let finalThStyle = defaultThStyle
+                          // 추출한 너비를 현재 헤더 셀에도 적용 (스타일 없는 경우)
+                          if (widthMatch && widthMatch[1] !== 'auto') {
+                            finalThStyle = { ...defaultThStyle, width: widthMatch[1], minWidth: '50px' }
+                          }
+                          return <th style={finalThStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
+                        }
+
+                        const thStyle = style.styles.th as any
+                        const finalStyle = { ...defaultThStyle, ...thStyle }
+
+                        // 새로운 테두리 속성이 있으면 적용
+                        if (thStyle.borderWidth || thStyle.borderStyle || thStyle.borderColor) {
+                          const borderWidth = thStyle.borderWidth || '1px'
+                          const borderStyle = thStyle.borderStyle || 'solid'
+                          const borderColor = thStyle.borderColor || '#ddd'
+                          finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
+                        }
+
+                        // 추출한 너비를 현재 헤더 셀에도 적용
                         if (widthMatch && widthMatch[1] !== 'auto') {
-                          finalThStyle = { ...defaultThStyle, width: widthMatch[1], minWidth: '50px' }
+                          finalStyle.width = widthMatch[1]
+                          finalStyle.minWidth = '50px'
                         }
-                        return <th style={finalThStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
-                      }
 
-                      const thStyle = style.styles.th as any
-                      const finalStyle = { ...defaultThStyle, ...thStyle }
+                        return <th style={finalStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
+                      },
+                      td: ({ children }) => {
+                        // 안전한 기본값 설정
+                        const defaultTdStyle = {
+                          border: '1px solid #ddd',
+                          padding: '8px',
+                          textAlign: 'left',
+                          verticalAlign: 'middle'
+                        }
 
-                      // 새로운 테두리 속성이 있으면 적용
-                      if (thStyle.borderWidth || thStyle.borderStyle || thStyle.borderColor) {
-                        const borderWidth = thStyle.borderWidth || '1px'
-                        const borderStyle = thStyle.borderStyle || 'solid'
-                        const borderColor = thStyle.borderColor || '#ddd'
-                        finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
-                      }
+                        // 스타일이 존재하는지 확인
+                        if (!style || !style.styles || !style.styles.td) {
+                          // TD에서도 width 적용 로직을 early return 이전에 실행
+                          let finalTdStyle = defaultTdStyle
+                          if (tableWidthsRef.current.length > 0 && columnIndexRef.current < tableWidthsRef.current.length) {
+                            const width = tableWidthsRef.current[columnIndexRef.current]
+                            if (width !== 'auto') {
+                              finalTdStyle = { ...defaultTdStyle, width: width, minWidth: '50px' }
+                            }
+                          }
+                          columnIndexRef.current++
+                          return <td style={finalTdStyle}>{children}</td>
+                        }
 
-                      // 추출한 너비를 현재 헤더 셀에도 적용
-                      if (widthMatch && widthMatch[1] !== 'auto') {
-                        finalStyle.width = widthMatch[1]
-                        finalStyle.minWidth = '50px'
-                      }
+                        const tdStyle = style.styles.td as any
+                        const finalStyle = { ...defaultTdStyle, ...tdStyle }
 
-                      return <th style={finalStyle}>{cleanChildren && cleanChildren.trim() ? cleanChildren : children}</th>
-                    },
-                    td: ({ children }) => {
-                      // 안전한 기본값 설정
-                      const defaultTdStyle = {
-                        border: '1px solid #ddd',
-                        padding: '8px',
-                        textAlign: 'left',
-                        verticalAlign: 'middle'
-                      }
+                        // 새로운 테두리 속성이 있으면 적용
+                        if (tdStyle.borderWidth || tdStyle.borderStyle || tdStyle.borderColor) {
+                          const borderWidth = tdStyle.borderWidth || '1px'
+                          const borderStyle = tdStyle.borderStyle || 'solid'
+                          const borderColor = tdStyle.borderColor || '#ddd'
+                          finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
+                        }
 
-                      // 스타일이 존재하는지 확인
-                      if (!style || !style.styles || !style.styles.td) {
-                        // TD에서도 width 적용 로직을 early return 이전에 실행
-                        let finalTdStyle = defaultTdStyle
+                        // 현재 열에 해당하는 너비 적용
                         if (tableWidthsRef.current.length > 0 && columnIndexRef.current < tableWidthsRef.current.length) {
                           const width = tableWidthsRef.current[columnIndexRef.current]
                           if (width !== 'auto') {
-                            finalTdStyle = { ...defaultTdStyle, width: width, minWidth: '50px' }
+                            finalStyle.width = width
+                            finalStyle.minWidth = '50px'
                           }
                         }
+
+                        // 다음 열로 이동
                         columnIndexRef.current++
-                        return <td style={finalTdStyle}>{children}</td>
-                      }
 
-                      const tdStyle = style.styles.td as any
-                      const finalStyle = { ...defaultTdStyle, ...tdStyle }
+                        return <td style={finalStyle}>{children}</td>
+                      },
+                      code: ({ inline, children, ...props }) => {
+                        // 블록 코드는 보통 pre 태그 안에 들어있거나 여러 줄을 가짐
+                        const content = Array.isArray(children) ? children.join('') : children
+                        const isBlockCode = typeof content === 'string' && content.includes('\n')
 
-                      // 새로운 테두리 속성이 있으면 적용
-                      if (tdStyle.borderWidth || tdStyle.borderStyle || tdStyle.borderColor) {
-                        const borderWidth = tdStyle.borderWidth || '1px'
-                        const borderStyle = tdStyle.borderStyle || 'solid'
-                        const borderColor = tdStyle.borderColor || '#ddd'
-                        finalStyle.border = `${borderWidth} ${borderStyle} ${borderColor}`
-                      }
-
-                      // 현재 열에 해당하는 너비 적용
-                      if (tableWidthsRef.current.length > 0 && columnIndexRef.current < tableWidthsRef.current.length) {
-                        const width = tableWidthsRef.current[columnIndexRef.current]
-                        if (width !== 'auto') {
-                          finalStyle.width = width
-                          finalStyle.minWidth = '50px'
-                        }
-                      }
-
-                      // 다음 열로 이동
-                      columnIndexRef.current++
-
-                      return <td style={finalStyle}>{children}</td>
-                    },
-                    code: ({ inline, children, ...props }) => {
-                      // 블록 코드는 보통 pre 태그 안에 들어있거나 여러 줄을 가짐
-                      const content = Array.isArray(children) ? children.join('') : children
-                      const isBlockCode = typeof content === 'string' && content.includes('\n')
-
-                      return !isBlockCode ? (
-                        <code style={style.styles.code} {...props}>
-                          {children}
-                        </code>
-                      ) : (
-                        <div style={style.styles.pre}>
-                          <pre style={{ margin: 0, fontFamily: style.styles.pre.fontFamily || "monospace", whiteSpace: "pre-wrap" }}>
-                            <code>{children}</code>
-                          </pre>
-                        </div>
-                      )
-                    },
-                    strong: ({ children, ...props }) => {
-                      // node 정보에서 앞뒤 공백 확인
-                      const hasSpaceBefore = props.node?.position?.start.offset > 0
-                      const hasSpaceAfter = props.node?.position?.end.offset < (props.node?.position?.source?.length || 0)
-
-                      return <strong style={style.styles.strong}>{children}</strong>
-                    },
-                    em: ({ children }) => <em style={style.styles.em}>{children}</em>,
-                    a: ({ children, href }) => (
-                      <a href={href} style={style.styles.a}>
-                        {children}
-                      </a>
-                    ),
-                    img: ({ src, alt, title }) => {
-
-
-                      const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-                        const img = e.target as HTMLImageElement
-                        img.style.border = '2px dashed #ccc'
-                        img.style.padding = '20px'
-                        img.style.background = '#f5f5f5'
-                        img.alt = `[이미지 로드 실패: ${alt || src}]`
-                      }
-
-                      const handleImageLoad = () => { }
-
-                      return (
-                        <img
-                          src={src}
-                          alt={alt || ''}
-                          title={title || alt || ''}
-                          onError={handleImageError}
-                          onLoad={handleImageLoad}
-                          crossOrigin="anonymous"
-                          referrerPolicy="no-referrer"
-                          style={{
-                            maxWidth: '100%',
-                            height: 'auto',
-                            margin: '1rem 0',
-                            display: 'block'
-                          }}
-                        />
-                      )
-                    },
-                    aside: ({ children }) => {
-                      return (
-                        <div style={{
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                          borderLeft: '4px solid #3b82f6',
-                          borderRadius: '6px',
-                          padding: '1rem',
-                          margin: '1.5rem 0',
-                          position: 'relative'
-                        }}>
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            marginBottom: '0.5rem',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            color: '#3b82f6'
-                          }}>
-                            <span style={{
-                              marginRight: '0.5rem',
-                              fontSize: '1.1rem'
-                            }}>
-                              💡
-                            </span>
-                            Callout
-                          </div>
-                          <div style={{
-                            color: '#374151',
-                            lineHeight: '1.6'
-                          }}>
+                        return !isBlockCode ? (
+                          <code style={style.styles.code} {...props}>
                             {children}
+                          </code>
+                        ) : (
+                          <div style={style.styles.pre}>
+                            <pre style={{ margin: 0, fontFamily: style.styles.pre.fontFamily || "monospace", whiteSpace: "pre-wrap" }}>
+                              <code>{children}</code>
+                            </pre>
                           </div>
-                        </div>
-                      )
-                    },
-                  }}
-                >
-                  {part.content}
-                </ReactMarkdown>
-              )
-            }
-          })}
+                        )
+                      },
+                      strong: ({ children, ...props }) => {
+                        // node 정보에서 앞뒤 공백 확인
+                        const hasSpaceBefore = props.node?.position?.start.offset > 0
+                        const hasSpaceAfter = props.node?.position?.end.offset < (props.node?.position?.source?.length || 0)
+
+                        return <strong style={style.styles.strong}>{children}</strong>
+                      },
+                      em: ({ children }) => <em style={style.styles.em}>{children}</em>,
+                      a: ({ children, href }) => (
+                        <a href={href} style={style.styles.a}>
+                          {children}
+                        </a>
+                      ),
+                      img: ({ src, alt, title }) => {
+
+
+                        const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+                          const img = e.target as HTMLImageElement
+                          img.style.border = '2px dashed #ccc'
+                          img.style.padding = '20px'
+                          img.style.background = '#f5f5f5'
+                          img.alt = `[이미지 로드 실패: ${alt || src}]`
+                        }
+
+                        const handleImageLoad = () => { }
+
+                        return (
+                          <img
+                            src={src}
+                            alt={alt || ''}
+                            title={title || alt || ''}
+                            onError={handleImageError}
+                            onLoad={handleImageLoad}
+                            crossOrigin="anonymous"
+                            referrerPolicy="no-referrer"
+                            style={{
+                              maxWidth: '100%',
+                              height: 'auto',
+                              margin: '1rem 0',
+                              display: 'block'
+                            }}
+                          />
+                        )
+                      },
+                      aside: ({ children }) => {
+                        return (
+                          <div style={{
+                            backgroundColor: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderLeft: '4px solid #3b82f6',
+                            borderRadius: '6px',
+                            padding: '1rem',
+                            margin: '1.5rem 0',
+                            position: 'relative'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: '0.5rem',
+                              fontSize: '0.9rem',
+                              fontWeight: '600',
+                              color: '#3b82f6'
+                            }}>
+                              <span style={{
+                                marginRight: '0.5rem',
+                                fontSize: '1.1rem'
+                              }}>
+                                💡
+                              </span>
+                              Callout
+                            </div>
+                            <div style={{
+                              color: '#374151',
+                              lineHeight: '1.6'
+                            }}>
+                              {children}
+                            </div>
+                          </div>
+                        )
+                      },
+                    }}
+                  >
+                    {part.content}
+                  </ReactMarkdown>
+                )
+              }
+            })}
+          </div>
         </div>
       </div>
-    </div >
+    </div>
   )
 }

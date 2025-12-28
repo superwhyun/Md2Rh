@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MarkdownEditor } from "@/components/markdown-editor"
 import { MarkdownPreview } from "@/components/markdown-preview"
 import { StyleManager } from "@/components/style-manager"
-import { StyleSelector } from "@/components/style-selector"
+// import { StyleSelector } from "@/components/style-selector" // Moved to MarkdownEditor
 import { HelpModal } from "@/components/help-modal"
 import { Button } from "@/components/ui/button"
 import { Github, Settings, HelpCircle, FileText, LayoutTemplate, Printer, Download } from "lucide-react"
@@ -135,28 +135,19 @@ export default function Home() {
 
         <div className="h-8 w-px bg-border/60 mx-2" />
 
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Design System</span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={isStyleManagerOpen ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setIsStyleManagerOpen(!isStyleManagerOpen)}
-                className="flex items-center gap-2 h-9 border border-transparent hover:border-border/50 transition-all font-medium"
-              >
-                <LayoutTemplate className="h-4 w-4" />
-                <span>서식 관리자</span>
-              </Button>
-
-              <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={handleStyleSelect} />
-            </div>
-          </div>
-        </div>
-
         <div className="flex-1" />
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={isStyleManagerOpen ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setIsStyleManagerOpen(!isStyleManagerOpen)}
+            className="flex items-center gap-2 h-9 border border-transparent hover:border-border/50 transition-all font-medium mr-2"
+          >
+            <LayoutTemplate className="h-4 w-4" />
+            <span>서식 관리자</span>
+          </Button>
+
           <ModeToggle />
 
           <div className="w-px h-4 bg-border/60 mx-1" />
@@ -176,80 +167,78 @@ export default function Home() {
       </div>
 
       {/* 메인 컨텐츠 영역 */}
-      <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
-          {isStyleManagerOpen && (
-            <>
-              <ResizablePanel
-                id="sidebar"
-                order={1}
-                defaultSize={25}
-                minSize={20}
-                maxSize={40}
-                className="bg-background"
-              >
-                <div className="h-full flex flex-col border-r">
-                  <div className="p-4 border-b flex items-center justify-between bg-muted/30">
-                    <h2 className="font-semibold">문서 서식 관리자</h2>
-                    <Button variant="ghost" size="sm" onClick={() => {
-                      setIsStyleManagerOpen(false)
-                    }}>
-                      ✕
-                    </Button>
-                  </div>
-                  <div className="flex-1 overflow-auto p-4">
-                    <StyleManager
-                      isOpen={true}
-                      onClose={() => {
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 min-w-0 h-full relative">
+          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+            {isStyleManagerOpen && (
+              <>
+                <ResizablePanel
+                  id="sidebar"
+                  order={1}
+                  defaultSize={25}
+                  minSize={20}
+                  maxSize={40}
+                  className="bg-background"
+                >
+                  <div className="h-full flex flex-col border-r">
+                    <div className="p-4 border-b flex items-center justify-between bg-muted/30">
+                      <h2 className="font-semibold">문서 서식 관리자</h2>
+                      <Button variant="ghost" size="sm" onClick={() => {
                         setIsStyleManagerOpen(false)
-                        setTempStyle(null)
-                      }}
-                      styles={styles}
-                      onStylesUpdate={handleStylesUpdate}
-                      selectedStyleId={selectedStyleId}
-                      onStyleSelect={handleStyleSelect}
-                      isSidebar={true}
-                      onTempStyleUpdate={setTempStyle}
-                    />
+                      }}>
+                        ✕
+                      </Button>
+                    </div>
+                    <div className="flex-1 overflow-auto p-4">
+                      <StyleManager
+                        isOpen={true}
+                        onClose={() => {
+                          setIsStyleManagerOpen(false)
+                          setTempStyle(null)
+                        }}
+                        styles={styles}
+                        onStylesUpdate={handleStylesUpdate}
+                        selectedStyleId={selectedStyleId}
+                        onStyleSelect={handleStyleSelect}
+                        isSidebar={true}
+                        onTempStyleUpdate={setTempStyle}
+                      />
+                    </div>
                   </div>
-                </div>
-              </ResizablePanel>
-              <ResizableHandle />
-            </>
-          )}
+                </ResizablePanel>
+                <ResizableHandle />
+              </>
+            )}
 
-          <ResizablePanel id="editor" order={2} defaultSize={isStyleManagerOpen ? 35 : 50} minSize={25}>
-            <div className="h-full flex flex-col border-r bg-background">
-              <MarkdownEditor
-                value={markdown}
-                onChange={setMarkdown}
-                title={title}
-                onTitleChange={setTitle}
-                coverFooter={coverFooter}
-                onCoverFooterChange={setCoverFooter}
-              />
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle />
-
-          <ResizablePanel id="preview" order={3} defaultSize={isStyleManagerOpen ? 40 : 50} minSize={30}>
-            <div className="h-full flex flex-col bg-muted/20 overflow-hidden">
-              {/* Preview needs to handle its own scrolling */}
-              <div className="flex-1 overflow-auto p-4 flex justify-center">
-                <div className="origin-top scale-[0.8] sm:scale-[0.85] md:scale-[0.9] lg:scale-[1.0] transition-transform">
-                  {/* Scale wrapper to fit A4 roughly or let user zoom? For now defaults are fine */}
-                  <MarkdownPreview
-                    markdown={markdown}
-                    style={selectedStyle}
-                    title={title}
-                    coverFooter={coverFooter}
-                  />
-                </div>
+            <ResizablePanel id="editor" order={2} defaultSize={isStyleManagerOpen ? 35 : 50} minSize={25}>
+              <div className="h-full flex flex-col border-r bg-background">
+                <MarkdownEditor
+                  value={markdown}
+                  onChange={setMarkdown}
+                  title={title}
+                  onTitleChange={setTitle}
+                  coverFooter={coverFooter}
+                  onCoverFooterChange={setCoverFooter}
+                  styles={styles}
+                  selectedStyleId={selectedStyleId}
+                  onStyleSelect={handleStyleSelect}
+                />
               </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+
+        {/* Fixed Preview Section - Width fixed to ~700px to fit scaled A4 */}
+        <div className="flex-none w-[700px] border-l bg-secondary/10 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-hidden relative">
+            <MarkdownPreview
+              markdown={markdown}
+              style={selectedStyle}
+              title={title}
+              coverFooter={coverFooter}
+            />
+          </div>
+        </div>
       </div>
 
       {/* 사용법 모달 */}

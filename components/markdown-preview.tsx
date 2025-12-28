@@ -30,73 +30,78 @@ export function MarkdownPreview({ markdown, style, title, coverFooter }: Markdow
 
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        <div className="bg-white shadow-lg" style={{
-          width: '210mm',
-          height: '297mm',
-          padding: '0',
-          boxSizing: 'border-box',
-          transform: 'scale(0.75)',
-          transformOrigin: 'top center',
-          position: 'relative'
-        }}>
-          <div style={{
-            ...style?.styles.body,
-            padding: '10mm',
-            border: '1px dashed #ccc',
-            margin: '10mm',
-            height: 'calc(297mm - 20mm)',
+        <div style={{ width: '157.5mm', height: '222.75mm', position: 'relative' }}>
+          <div className="bg-white shadow-lg" style={{
+            width: '210mm',
+            height: '297mm',
+            padding: '0',
             boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            paddingTop: '15%'
+            transform: 'scale(0.75)',
+            transformOrigin: 'top left', // Changed to top left to fit in wrapper
+            position: 'absolute', // Absolute to sit inside relative wrapper
+            top: 0, left: 0
           }}>
-            <h1 style={{
-              ...style?.styles.h1,
-              fontSize: '2.5rem',
-              fontWeight: 'bold',
-              marginBottom: '0',
-              lineHeight: '1.1',
-              flex: 'none'
+            <div style={{
+              ...style?.styles.body,
+              padding: '10mm',
+              border: '1px dashed #ccc',
+              margin: '10mm',
+              height: 'calc(297mm - 20mm)',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              paddingTop: '15%'
             }}>
-              {title}
-            </h1>
-            <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
-              <p style={{
-                ...style?.styles.p,
-                fontSize: '1.5rem',
-                color: '#666',
-                margin: '0'
+              <h1 style={{
+                ...style?.styles.h1,
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                fontFamily: 'Pretendard, sans-serif',
+                backgroundColor: 'transparent',
+                marginBottom: '0',
+                lineHeight: '1.1',
+                flex: 'none'
               }}>
-                {today}
-              </p>
-            </div>
-            {coverFooter && (
-              <div style={{ flex: 'none', width: '100%', marginTop: 'auto', textAlign: 'left', paddingTop: '40px' }}>
-                <div style={{ ...style?.styles.p, fontSize: '1rem', color: '#444' }}>
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({ node, ...props }) => <p style={{ marginBottom: '0.5em', ...style?.styles.p }} {...props} />,
-                      strong: ({ node, ...props }) => <strong style={{ fontWeight: 'bold' }} {...props} />,
-                      em: ({ node, ...props }) => <em style={{ fontStyle: 'italic' }} {...props} />,
-                      ul: ({ node, ...props }) => <ul style={{ listStyleType: 'disc', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
-                      ol: ({ node, ...props }) => <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
-                      li: ({ node, ...props }) => <li style={{ marginBottom: '0.2em' }} {...props} />,
-                      table: ({ node, ...props }) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '1em', fontSize: '0.9em', ...style?.styles.table }} {...props} />,
-                      thead: ({ node, ...props }) => <thead style={{ backgroundColor: '#f8f9fa' }} {...props} />,
-                      tbody: ({ node, ...props }) => <tbody {...props} />,
-                      tr: ({ node, ...props }) => <tr style={{ borderBottom: '1px solid #ddd' }} {...props} />,
-                      th: ({ node, ...props }) => <th style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold', textAlign: 'left', ...style?.styles.th }} {...props} />,
-                      td: ({ node, ...props }) => <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', ...style?.styles.td }} {...props} />
-                    }}
-                  >
-                    {coverFooter}
-                  </ReactMarkdown>
-                </div>
+                {title}
+              </h1>
+              <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
+                <p style={{
+                  ...style?.styles.p,
+                  fontSize: '1.5rem',
+                  color: '#666',
+                  margin: '0'
+                }}>
+                  {today}
+                </p>
               </div>
-            )}
+              {coverFooter && (
+                <div style={{ flex: 'none', width: '100%', marginTop: 'auto', textAlign: 'left', paddingTop: '40px' }}>
+                  <div style={{ ...style?.styles.p, fontSize: '1rem', color: '#444' }}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ node, ...props }) => <p style={{ marginBottom: '0.5em', ...style?.styles.p }} {...props} />,
+                        strong: ({ node, ...props }) => <strong style={{ fontWeight: 'bold' }} {...props} />,
+                        em: ({ node, ...props }) => <em style={{ fontStyle: 'italic' }} {...props} />,
+                        ul: ({ node, ...props }) => <ul style={{ listStyleType: 'disc', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
+                        ol: ({ node, ...props }) => <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
+                        li: ({ node, ...props }) => <li style={{ marginBottom: '0.2em' }} {...props} />,
+                        table: ({ node, ...props }) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '1em', fontSize: '0.9em', ...style?.styles.table }} {...props} />,
+                        thead: ({ node, ...props }) => <thead style={{ backgroundColor: '#f8f9fa' }} {...props} />,
+                        tbody: ({ node, ...props }) => <tbody {...props} />,
+                        tr: ({ node, ...props }) => <tr style={{ borderBottom: '1px solid #ddd' }} {...props} />,
+                        th: ({ node, ...props }) => <th style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold', textAlign: 'left', ...style?.styles.th }} {...props} />,
+                        td: ({ node, ...props }) => <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', ...style?.styles.td }} {...props} />
+                      }}
+                    >
+                      {coverFooter}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

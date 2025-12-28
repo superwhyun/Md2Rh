@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card"
 import { Upload } from "lucide-react"
 import { EditorToolbar } from "./editor-toolbar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { StyleSelector } from "@/components/style-selector"
+import type { DocumentStyle } from "@/lib/default-styles"
 
 interface MarkdownEditorProps {
   value: string
@@ -17,9 +19,12 @@ interface MarkdownEditorProps {
   onTitleChange: (title: string) => void
   coverFooter: string
   onCoverFooterChange: (value: string) => void
+  styles: DocumentStyle[]
+  selectedStyleId: string
+  onStyleSelect: (id: string) => void
 }
 
-export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFooter, onCoverFooterChange }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFooter, onCoverFooterChange, styles, selectedStyleId, onStyleSelect }: MarkdownEditorProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [isImageDragOver, setIsImageDragOver] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -319,7 +324,14 @@ export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFoo
 
   return (
     <Tabs defaultValue="main" className="h-full flex flex-col">
-      <div className="bg-background border-b z-10 shrink-0 px-4 pt-2">
+      <div className="bg-background border-b z-10 shrink-0 px-4 pt-4 pb-2">
+        <div className="mb-4 flex items-center justify-end gap-3">
+          <span className="text-sm font-semibold text-muted-foreground">스타일 선택</span>
+          <div className="w-[200px]">
+            <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={onStyleSelect} />
+          </div>
+        </div>
+
         <TabsList className="grid w-full grid-cols-2 mb-2">
           <TabsTrigger value="cover">Cover Page</TabsTrigger>
           <TabsTrigger value="main">Main Content</TabsTrigger>
