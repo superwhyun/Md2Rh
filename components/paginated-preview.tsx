@@ -12,9 +12,10 @@ import { LinkCard } from "@/components/link-card"
 interface PaginatedPreviewProps {
   content: string
   style: DocumentStyle
+  isPrinting?: boolean
 }
 
-export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
+export function PaginatedPreview({ content, style, isPrinting = false }: PaginatedPreviewProps) {
   if (!style) {
     return <div>Loading...</div>
   }
@@ -218,9 +219,14 @@ export function PaginatedPreview({ content, style }: PaginatedPreviewProps) {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-      <div style={{ width: '157.5mm', overflow: 'hidden' }}>
-        <div className="bg-white shadow-lg" style={{
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '40px' }}>
+      <div style={isPrinting ? { width: '210mm', overflow: 'visible' } : { width: '157.5mm', overflow: 'hidden' }}>
+        <div className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
+          width: '210mm',
+          minHeight: '297mm',
+          padding: '0',
+          boxSizing: 'border-box'
+        } : {
           width: '210mm',
           minHeight: '297mm',
           padding: '0',

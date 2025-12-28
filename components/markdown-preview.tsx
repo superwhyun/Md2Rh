@@ -98,9 +98,14 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
     })
 
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        <div style={{ width: '157.5mm', height: '222.75mm', position: 'relative' }}>
-          <div className="bg-white shadow-lg" style={{
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '20px' }}>
+        <div style={isPrinting ? { width: '210mm', height: '297mm' } : { width: '157.5mm', height: '222.75mm', position: 'relative' }}>
+          <div className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
+            width: '210mm',
+            height: '297mm',
+            padding: '0',
+            boxSizing: 'border-box'
+          } : {
             width: '210mm',
             height: '297mm',
             padding: '0',
@@ -131,7 +136,8 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
                 backgroundColor: 'transparent',
                 marginBottom: '0',
                 lineHeight: '1.1',
-                flex: 'none'
+                flex: 'none',
+                color: '#000000'
               }}>
                 {title}
               </h1>
@@ -182,6 +188,8 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
   const handlePrint = async () => {
     if (printRef.current && !isPrinting) {
       setIsPrinting(true)
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // 전체 프린트 영역 추출 (타이틀 페이지 + 본문 모두 포함)
       const allContent = printRef.current
 
@@ -590,7 +598,7 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
       >
         <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           {renderTitlePage()}
-          <PaginatedPreview content={finalMarkdown} style={style} />
+          <PaginatedPreview content={finalMarkdown} style={style} isPrinting={isPrinting} />
         </div>
       </div>
     </div>
