@@ -10,6 +10,8 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Printer, Highlighter } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import jsPDF from "jspdf"
+import html2canvas from "html2canvas"
 
 interface MarkdownPreviewProps {
   markdown: string
@@ -42,42 +44,50 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
     const compB = 255 - b
 
     const textColor = `rgb(${compR}, ${compG}, ${compB})`
-    const span = `<span style="background-color: ${highlightColor}; color: ${textColor};">${text}</span>`
+    const escapedText = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+    const span = `<span data-highlight="true" style="background-color: ${highlightColor}; color: ${textColor}; display: inline; box-decoration-break: clone; -webkit-box-decoration-break: clone;">${escapedText}</span>`
 
-    // 문맥 기반 찾기
-    let contextBefore = ""
-    let contextAfter = ""
-    const anchor = selection.anchorNode
-
-    if (anchor && anchor.nodeType === 3) { // Text node
-      const fullText = anchor.textContent || ""
-      const range = selection.getRangeAt(0)
-
-      if (range.startContainer === anchor) {
-        const start = Math.max(0, range.startOffset - 15)
-        contextBefore = fullText.substring(start, range.startOffset)
-
-        const end = Math.min(fullText.length, range.endOffset + 15)
-        contextAfter = fullText.substring(range.endOffset, end)
-      }
+    // 선택한 텍스트가 마크다운에 존재하는지 확인
+    if (!markdown.includes(text)) {
+      alert("원본 텍스트를 찾을 수 없습니다. (서식이 포함된 텍스트는 하이라이트할 수 없습니다)")
+      return
     }
 
-    const searchPattern = contextBefore + text + contextAfter
+    // 텍스트가 여러 번 나타나는지 확인
+    const occurrences = markdown.split(text).length - 1
 
-    if (markdown.includes(searchPattern)) {
-      const replacement = contextBefore + span + contextAfter
-      onMarkdownChange(markdown.replace(searchPattern, replacement))
+    if (occurrences === 1) {
+      // 한 번만 나타나면 바로 교체
+      onMarkdownChange(markdown.replace(text, span))
       selection.removeAllRanges()
-    } else if (markdown.includes(text)) {
-      const splits = markdown.split(text)
-      if (splits.length === 2) {
-        onMarkdownChange(markdown.replace(text, span))
-        selection.removeAllRanges()
-      } else {
-        alert("선택한 텍스트가 여러 번 발견되어 정확한 위치를 찾을 수 없습니다. 주변 문맥을 더 포함하여 선택해주세요.")
-      }
     } else {
-      alert("원본 텍스트를 찾을 수 없습니다. (서식이 포함된 텍스트는 하이라이트할 수 없습니다)")
+      // 여러 번 나타나면 문맥 기반으로 찾기 시도
+      const range = selection.getRangeAt(0)
+      const startContainer = range.startContainer
+      const endContainer = range.endContainer
+
+      // 시작과 끝이 같은 텍스트 노드인 경우만 문맥 검색
+      if (startContainer === endContainer && startContainer.nodeType === 3) {
+        const fullText = startContainer.textContent || ""
+        const beforeText = fullText.substring(Math.max(0, range.startOffset - 20), range.startOffset)
+        const afterText = fullText.substring(range.endOffset, Math.min(fullText.length, range.endOffset + 20))
+
+        const searchPattern = beforeText + text + afterText
+
+        if (markdown.includes(searchPattern)) {
+          const replacement = beforeText + span + afterText
+          onMarkdownChange(markdown.replace(searchPattern, replacement))
+          selection.removeAllRanges()
+          return
+        }
+      }
+
+      // 문맥 검색 실패 시 첫 번째 occurrence 교체
+      onMarkdownChange(markdown.replace(text, span))
+      selection.removeAllRanges()
     }
   }
 
@@ -100,7 +110,7 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '20px' }}>
         <div style={isPrinting ? { width: '210mm', height: '297mm' } : { width: '157.5mm', height: '222.75mm', position: 'relative' }}>
-          <div className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
+          <div data-cover-page="true" className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
             width: '210mm',
             height: '297mm',
             padding: '0',
@@ -118,7 +128,6 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
             <div style={{
               ...style?.styles.body,
               padding: '10mm',
-              border: '1px dashed #ccc',
               margin: '10mm',
               height: 'calc(297mm - 20mm)',
               boxSizing: 'border-box',
@@ -185,332 +194,405 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
   const printRef = useRef<HTMLDivElement>(null)
   const [isPrinting, setIsPrinting] = useState(false)
 
-  const handlePrint = async () => {
-    if (printRef.current && !isPrinting) {
-      setIsPrinting(true)
-      await new Promise(resolve => setTimeout(resolve, 100))
+  type DisabledStyleNode = {
+    node: HTMLStyleElement | HTMLLinkElement
+    previousMedia: string | null
+  }
 
-      // 전체 프린트 영역 추출 (타이틀 페이지 + 본문 모두 포함)
-      const allContent = printRef.current
+  // 스타일시트 비활성화 및 oklch가 없는 새 스타일 생성
+  const disableOklchStyles = (): { disabledSheets: DisabledStyleNode[], newStyle: HTMLStyleElement } => {
+    const disabledSheets: DisabledStyleNode[] = []
+    const styleSheets = Array.from(document.styleSheets)
 
-      // 현재 페이지의 모든 스타일 추출
-      const styleElement = printRef.current.querySelector('style')
-      let customCSS = styleElement ? styleElement.textContent : ''
+    styleSheets.forEach((sheet) => {
+      const ownerNode = sheet.ownerNode
+      if (!(ownerNode instanceof HTMLStyleElement || ownerNode instanceof HTMLLinkElement)) {
+        return
+      }
 
-      // 타이틀 유무 확인
-      const hasTitle = !!title?.trim()
-
-      // 페이지의 모든 CSS 스타일시트 추출
-      const allStylesheets = Array.from(document.styleSheets)
-      let additionalCSS = ''
-
+      let hasOklch = false
       try {
-        allStylesheets.forEach(stylesheet => {
-          try {
-            if (stylesheet.cssRules) {
-              const rules = Array.from(stylesheet.cssRules)
-              additionalCSS += rules.map(rule => rule.cssText).join('\n')
-            }
-          } catch (e) {
-            // CORS 제한으로 인한 에러 무시
-            console.warn('Cannot access stylesheet:', e)
-          }
-        })
-      } catch (e) {
-        console.warn('Error extracting stylesheets:', e)
+        hasOklch = Array.from(sheet.cssRules).some((rule) => rule.cssText.toLowerCase().includes("oklch("))
+      } catch {
+        // cross-origin stylesheet 접근 에러는 무시
       }
 
-      // Blob URL만 Base64로 변환하는 함수 (외부 URL은 그대로 유지)
-      const convertBlobImagesToBase64 = async (htmlContent: string): Promise<string> => {
-        const tempDiv = document.createElement('div')
-        tempDiv.innerHTML = htmlContent
-        const images = tempDiv.querySelectorAll('img')
+      if (!hasOklch) return
 
-        const promises = Array.from(images).map(async (img) => {
-          try {
-            if (img.src && img.src.startsWith('blob:')) {
-              // Blob URL만 Base64로 변환 (로컬 파일이므로 빠름)
-              try {
-                const response = await fetch(img.src)
-                const blob = await response.blob()
-                const dataURL = await new Promise<string>((resolve) => {
-                  const reader = new FileReader()
-                  reader.onload = () => resolve(reader.result as string)
-                  reader.readAsDataURL(blob)
-                })
-                img.src = dataURL
-                console.log('Blob URL converted to Base64 for print')
-              } catch (blobError) {
-                console.warn('Blob URL conversion failed:', blobError)
-              }
-            } else if (img.src && img.src.startsWith('http')) {
-              // 외부 URL은 그대로 두고 프린트 시 브라우저가 처리하도록 함
-              console.log('External URL kept as-is for print:', img.src)
-              // 변환하지 않고 그대로 유지
-            }
-          } catch (e) {
-            console.warn('Image conversion error:', e)
-          }
-        })
+      disabledSheets.push({
+        node: ownerNode,
+        previousMedia: ownerNode.getAttribute("media"),
+      })
+      ownerNode.setAttribute("data-disabled-oklch", "true")
+      ownerNode.setAttribute("media", "not all")
+    })
 
-        await Promise.all(promises)
-        return tempDiv.innerHTML
+    // oklch 없는 기본 스타일 추가
+    const newStyle = document.createElement('style')
+    newStyle.textContent = `
+      :root {
+        --background: #f9f9fb !important;
+        --foreground: #211f26 !important;
+        --card: #ffffff !important;
+        --card-foreground: #211f26 !important;
+        --primary: #7f5a8f !important;
+        --primary-foreground: #f9f9fb !important;
+        --secondary: #e1d9e8 !important;
+        --secondary-foreground: #211f26 !important;
+        --muted: #e0dee5 !important;
+        --muted-foreground: #6d6478 !important;
+        --accent: #e8b2b6 !important;
+        --accent-foreground: #5a3d3e !important;
+        --border: #d3cfd8 !important;
+        --input: #ece9f0 !important;
+      }
+      .bg-white { background-color: #ffffff !important; }
+      .bg-background { background-color: #ffffff !important; }
+      body { color: #000000 !important; }
+      .text-foreground { color: #000000 !important; }
+      .border { border-color: #e5e7eb !important; }
+      [data-pdf-capture-root="true"] p,
+      [data-pdf-capture-root="true"] li,
+      [data-pdf-capture-root="true"] td,
+      [data-pdf-capture-root="true"] th {
+        color: #222222;
+        -webkit-text-fill-color: #222222;
+      }
+      [data-pdf-capture-root="true"] [data-pdf-text="true"] {
+        color: #222222;
+        -webkit-text-fill-color: #222222;
+      }
+      [data-pdf-capture-root="true"] [data-highlight="true"] {
+        display: inline;
+        -webkit-text-fill-color: currentColor;
+      }
+    `
+    document.head.appendChild(newStyle)
+
+    return { disabledSheets, newStyle }
+  }
+
+  // 스타일 복원
+  const restoreOklchStyles = (disabledSheets: DisabledStyleNode[], newStyle: HTMLStyleElement) => {
+    disabledSheets.forEach(({ node, previousMedia }) => {
+      node.removeAttribute("data-disabled-oklch")
+      if (previousMedia === null) {
+        node.removeAttribute("media")
+      } else {
+        node.setAttribute("media", previousMedia)
+      }
+    })
+    newStyle.remove()
+  }
+
+  const normalizeHighlightTextForCanvas = (doc: Document) => {
+    const highlightNodes = Array.from(doc.querySelectorAll('[data-highlight="true"]'))
+    const parentNodes = highlightNodes
+      .map((node) => node.parentElement)
+      .filter((parent): parent is HTMLElement => Boolean(parent))
+    const processedParents = new Set<HTMLElement>()
+
+    highlightNodes.forEach((node) => {
+      const text = node.textContent || ""
+      const styleAttr = node.getAttribute("style") || ""
+      const fragment = doc.createDocumentFragment()
+
+      for (const char of Array.from(text)) {
+        const charSpan = doc.createElement("span")
+        charSpan.setAttribute("data-highlight-fragment", "true")
+        charSpan.setAttribute(
+          "style",
+          `${styleAttr}; white-space: pre; font-family: inherit; font-size: inherit; font-weight: inherit; font-style: inherit; line-height: inherit; letter-spacing: inherit; text-rendering: inherit;`
+        )
+        charSpan.textContent = char
+        fragment.appendChild(charSpan)
       }
 
-      // text-indent 스타일이 제대로 전달되도록 수정 (모든 em 값에 대해)
-      customCSS = customCSS.replace(/text-indent:\s*-[\d\.]+em/g, (match) => match + ' !important')
+      node.replaceWith(fragment)
+    })
 
-      if (allContent) {
-        // Blob URL만 Base64로 변환
-        const convertedContent = await convertBlobImagesToBase64(allContent.innerHTML)
+    parentNodes.forEach((parent) => {
+      if (!parent || processedParents.has(parent)) return
+      processedParents.add(parent)
 
+      Array.from(parent.childNodes).forEach((child) => {
+        if (child.nodeType !== Node.TEXT_NODE) return
+        if (!child.textContent) return
 
-        const printWindow = window.open('', '_blank')
-        if (printWindow) {
-          printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>문서 프린트</title>
-                <style>
-                  @page {
-                    size: A4;
-                    margin: 5mm 1.5mm;
-                  }
-                  body {
-                    margin: 0;
-                    padding: 0;
-                    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                  }
-                  
-                  /* 모든 transform과 스케일링 효과 완전 제거 */
-                  * {
-                    transform: none !important;
-                    scale: none !important;
-                    zoom: 1 !important;
-                  }
-                  
-                  /* 페이지별 스타일 */
-                  .mx-auto {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    width: 100% !important;
-                    max-width: none !important;
-                    min-height: 100% !important;
-                    transform: none !important;
-                    box-shadow: none !important;
-                    border: none !important;
-                  }
-                  
-                  ${hasTitle ? `
-                  /* 타이틀이 있을 때: 타이틀 페이지만 page-break 적용 */
-                  .mx-auto:first-child {
-                    page-break-after: always;
-                  }
-                  
-                  /* 내용 페이지는 page-break 없음 */
-                  .mx-auto:last-child {
-                    page-break-after: auto !important;
-                  }
-                  
-                  /* 타이틀 페이지 레이아웃만 강제 유지 */
-                  .mx-auto:first-child > div {
-                    display: flex !important;
-                    flex-direction: column !important;
-                    align-items: center !important;
-                    text-align: center !important;
-                    padding-top: 15% !important;
-                    height: 100% !important;
-                    min-height: 100% !important;
-                  }
-                  
-                  /* 내용 페이지는 기본 정렬로 복원 */
-                  .mx-auto:last-child > div {
-                    text-align: left !important;
-                    align-items: flex-start !important;
-                    padding-top: 0 !important;
-                  }
-                  
-                  .mx-auto:first-child h1 {
-                    flex: none !important;
-                    margin-bottom: 0 !important;
-                  }
-                  
-                  .mx-auto:first-child > div > div {
-                    flex: 1 !important;
-                    display: flex !important;
-                    align-items: center !important;
-                  }
-                  ` : `
-                  /* 타이틀이 없을 때: 내용 페이지만 존재 */
-                  .mx-auto {
-                    page-break-after: auto !important;
-                  }
-                  `}
-                  
-                  /* 미리보기 영역을 프린트용으로 조정 */
-                  .mx-auto > div > div {
-                    padding: 0.5mm 1.5mm 15mm 1.5mm !important;
-                    margin: 0 !important;
-                    border: none !important;
-                    min-height: auto !important;
-                    width: 100% !important;
-                    max-width: none !important;
-                    box-sizing: border-box !important;
-                  }
-                  @media print {
-                    body {
-                      print-color-adjust: exact;
-                      -webkit-print-color-adjust: exact;
-                    }
-                    
-                    /* 이미지 프린트 강제 활성화 */
-                    img {
-                      print-color-adjust: exact !important;
-                      -webkit-print-color-adjust: exact !important;
-                      color-adjust: exact !important;
-                    }
-                  }
-                  
-                  /* 테이블 스타일 */
-                  table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin: 1rem 0;
-                    table-layout: fixed !important;
-                  }
-                  th, td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                    word-wrap: break-word;
-                    overflow-wrap: break-word;
-                    box-sizing: border-box;
-                  }
-                  th {
-                    background-color: #f2f2f2;
-                    font-weight: bold;
-                  }
-                  
-                  
-                  
-                  /* 커스텀 UL 스타일 - 프린트용 강화 */
-                  ul.custom-ul {
-                    list-style: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                  }
-                  
-                  /* 프린트에서 모든 UL 스타일 강제 적용 */
-                  ${customCSS.replace(/}/g, ' !important;}').replace(/!important !important/g, '!important')}
-                  
-                  /* 페이지의 모든 CSS 스타일 포함 */
-                  ${additionalCSS}
-                  
-                  /* 링크 카드 전용 스타일 */
-                  .link-card {
-                    border: 1px solid #e2e8f0 !important;
-                    border-radius: 8px !important;
-                    padding: 12px !important;
-                    margin-bottom: 16px !important;
-                    display: flex !important;
-                    gap: 12px !important;
-                    text-decoration: none !important;
-                    color: inherit !important;
-                    transition: none !important;
-                  }
-                  
-                  .link-card:hover {
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-                  }
-                  
-                  .link-card img {
-                    width: 80px !important;
-                    height: 80px !important;
-                    object-fit: cover !important;
-                    border-radius: 6px !important;
-                    flex-shrink: 0 !important;
-                    print-color-adjust: exact !important;
-                    -webkit-print-color-adjust: exact !important;
-                    color-adjust: exact !important;
-                    display: block !important;
-                    max-width: none !important;
-                  }
-                  
-                  @media print {
-                    .link-card img {
-                      -webkit-print-color-adjust: exact !important;
-                      print-color-adjust: exact !important;
-                      color-adjust: exact !important;
-                      opacity: 1 !important;
-                      visibility: visible !important;
-                      display: block !important;
-                    }
-                  }
-                  
-                  .link-card h3 {
-                    font-weight: 500 !important;
-                    font-size: 14px !important;
-                    line-height: 1.4 !important;
-                    margin: 0 0 4px 0 !important;
-                    color: #1f2937 !important;
-                  }
-                  
-                  .link-card p {
-                    font-size: 12px !important;
-                    line-height: 1.4 !important;
-                    color: #6b7280 !important;
-                    margin: 0 0 8px 0 !important;
-                  }
-                  
-                  .link-card .site-name {
-                    font-size: 11px !important;
-                    color: #9ca3af !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    gap: 4px !important;
-                  }
-                </style>
-              </head>
-              <body>
-                ${convertedContent}
-              </body>
-            </html>
-          `)
-          printWindow.document.close()
+        const textSpan = doc.createElement("span")
+        textSpan.setAttribute("data-pdf-text", "true")
+        textSpan.setAttribute(
+          "style",
+          "font-family: inherit; font-size: inherit; font-weight: inherit; font-style: inherit; line-height: inherit; letter-spacing: inherit;"
+        )
+        textSpan.textContent = child.textContent
+        parent.replaceChild(textSpan, child)
+      })
+    })
+  }
 
-          // 이미지 로딩 완료를 기다린 후 프린트
-          const images = printWindow.document.querySelectorAll('img')
-          const imagePromises = Array.from(images).map(img => {
-            return new Promise<void>((resolve) => {
-              if (img.complete) {
-                resolve()
-              } else {
-                img.onload = () => resolve()
-                img.onerror = () => resolve() // 에러도 완료로 처리
-                // 타임아웃 설정 (5초 후 강제 진행)
-                setTimeout(() => resolve(), 5000)
-              }
-            })
-          })
+  const findSafePageBreakY = (
+    canvas: HTMLCanvasElement,
+    startY: number,
+    targetEndY: number,
+    minEndY: number
+  ) => {
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return targetEndY
 
-          console.log(`Waiting for ${images.length} images to load...`)
+    const searchPadding = 120
+    const lower = Math.max(minEndY, targetEndY - searchPadding)
+    const upper = Math.min(canvas.height - 1, targetEndY + searchPadding)
+    if (upper <= lower) return targetEndY
 
-          // 모든 이미지 로딩 완료 후 프린트
-          Promise.all(imagePromises).then(() => {
-            console.log('All images loaded, starting print...')
-            printWindow.focus()
+    const yStart = Math.floor(lower)
+    const yEnd = Math.floor(upper)
+    const h = yEnd - yStart + 1
 
-            // 조금 더 대기 후 프린트 (렌더링 완료 보장)
-            setTimeout(() => {
-              printWindow.print()
-              printWindow.close()
-            }, 500)
-          })
+    let imageData: ImageData
+    try {
+      imageData = ctx.getImageData(0, yStart, canvas.width, h)
+    } catch {
+      return targetEndY
+    }
+
+    const { data, width, height } = imageData
+    let bestY = targetEndY
+    let bestDistance = Number.POSITIVE_INFINITY
+    let foundBlankRow = false
+
+    for (let row = 0; row < height; row++) {
+      let hasInk = false
+      for (let x = 0; x < width; x += 3) {
+        const idx = (row * width + x) * 4
+        const alpha = data[idx + 3]
+        if (alpha < 8) continue
+
+        const r = data[idx]
+        const g = data[idx + 1]
+        const b = data[idx + 2]
+        if (r < 245 || g < 245 || b < 245) {
+          hasInk = true
+          break
         }
       }
 
-      setIsPrinting(false)
+      if (!hasInk) {
+        foundBlankRow = true
+        const y = yStart + row
+        const distance = Math.abs(y - targetEndY)
+        if (distance < bestDistance) {
+          bestDistance = distance
+          bestY = y
+        }
+      }
+    }
+
+    if (!foundBlankRow) return targetEndY
+    if (bestY <= startY) return targetEndY
+    return bestY
+  }
+
+  const handlePrint = async () => {
+    if (printRef.current && !isPrinting) {
+      setIsPrinting(true)
+
+      // oklch 스타일 비활성화
+      const { disabledSheets, newStyle } = disableOklchStyles()
+
+      // 상태 업데이트 반영을 위해 약간의 딜레이
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      try {
+        printRef.current.setAttribute("data-pdf-capture-root", "true")
+
+        // A4 사이즈 설정 (mm)
+        const a4Width = 210
+        const a4Height = 297
+
+        // 페이지 여백 설정 (mm)
+        const marginTop = 15
+        const marginBottom = 15
+        const marginLeft = 10
+        const contentWidth = a4Width - marginLeft * 2  // 실제 콘텐츠 너비
+        const contentHeight = a4Height - marginTop - marginBottom  // 실제 콘텐츠 높이
+
+        // PDF 생성
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        })
+
+        // Noto Sans KR 폰트 로드 (한글 지원)
+        try {
+          const fontUrl = 'https://fonts.gstatic.com/s/notosanskr/v36/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzuozeLTq8H4hfeE.ttf'
+          const fontResponse = await fetch(fontUrl)
+          const fontBuffer = await fontResponse.arrayBuffer()
+          const fontBase64 = btoa(
+            new Uint8Array(fontBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+          )
+          pdf.addFileToVFS('NotoSansKR-Regular.ttf', fontBase64)
+          pdf.addFont('NotoSansKR-Regular.ttf', 'NotoSansKR', 'normal')
+        } catch (fontError) {
+          console.warn('한글 폰트 로드 실패, 기본 폰트 사용:', fontError)
+        }
+
+        // 프린트 영역의 모든 페이지 요소 찾기 (bg-white 클래스를 가진 실제 페이지들)
+        const pageElements = printRef.current.querySelectorAll('.bg-white')
+
+        if (pageElements.length === 0) {
+          throw new Error('페이지 요소를 찾을 수 없습니다.')
+        }
+
+        let isFirstPage = true
+        let contentPageNumber = 0  // 본문 페이지 번호 (커버페이지 제외)
+
+        for (let i = 0; i < pageElements.length; i++) {
+          const element = pageElements[i] as HTMLElement
+          const isCoverPage = element.hasAttribute('data-cover-page')
+
+          // 원본 transform 저장 및 제거
+          const originalTransform = element.style.transform
+          const originalWidth = element.style.width
+          const originalMinHeight = element.style.minHeight
+          const originalHeight = element.style.height
+          element.style.transform = 'none'
+          element.style.width = '210mm'
+
+          // html2canvas로 요소를 캔버스로 변환 (전체 높이 캡처)
+          const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: 794, // 210mm at 96dpi
+            windowWidth: 794,
+            onclone: (clonedDoc) => {
+              normalizeHighlightTextForCanvas(clonedDoc)
+            }
+          })
+
+          // 스타일 복원
+          element.style.transform = originalTransform
+          element.style.width = originalWidth
+          element.style.minHeight = originalMinHeight
+          element.style.height = originalHeight
+
+          // 커버페이지는 분할 없이 한 장으로 처리
+          if (isCoverPage) {
+            if (!isFirstPage) {
+              pdf.addPage()
+            }
+            isFirstPage = false
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95)
+            pdf.addImage(imgData, 'JPEG', 0, 0, a4Width, a4Height)
+            continue
+          }
+
+          // 본문 콘텐츠: 실제 캔버스 비율 기준으로 페이지 분할
+          // (96dpi 가정값을 쓰면 환경별로 비율 왜곡이 생길 수 있음)
+          const pxPerMm = canvas.width / contentWidth
+          const contentHeightPx = contentHeight * pxPerMm
+          const totalHeight = canvas.height
+          let sourceY = 0
+
+          // 캔버스를 콘텐츠 높이로 나누되, 텍스트가 없는 빈 행에서 페이지 경계를 찾음
+          while (sourceY < totalHeight - 1) {
+            if (!isFirstPage) {
+              pdf.addPage()
+            }
+            isFirstPage = false
+            contentPageNumber++
+
+            const desiredEndY = Math.min(sourceY + contentHeightPx, totalHeight)
+            const minEndY = Math.min(
+              totalHeight,
+              Math.floor(sourceY + contentHeightPx * 0.7)
+            )
+            let safeEndY = desiredEndY
+
+            if (desiredEndY < totalHeight) {
+              safeEndY = findSafePageBreakY(canvas, sourceY, desiredEndY, minEndY)
+            }
+            if (safeEndY <= sourceY) {
+              safeEndY = desiredEndY
+            }
+
+            const sourceHeight = safeEndY - sourceY
+
+            // 임시 캔버스 생성하여 해당 영역만 추출
+            const pageCanvas = document.createElement('canvas')
+            pageCanvas.width = canvas.width
+            pageCanvas.height = Math.ceil(sourceHeight)
+            const ctx = pageCanvas.getContext('2d')
+
+            if (ctx) {
+              // 흰색 배경으로 채우기
+              ctx.fillStyle = '#ffffff'
+              ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
+
+              // 해당 페이지 영역 복사
+              ctx.drawImage(
+                canvas,
+                0, sourceY,                    // source x, y
+                canvas.width, sourceHeight,    // source width, height
+                0, 0,                          // dest x, y
+                canvas.width, sourceHeight     // dest width, height
+              )
+
+              // 캔버스를 이미지로 변환
+              const imgData = pageCanvas.toDataURL('image/jpeg', 0.95)
+
+              // PDF에 이미지 추가 (여백을 두고 배치)
+              // 실제 콘텐츠 비율 계산
+              const actualContentHeightMm = sourceHeight / pxPerMm
+              pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, actualContentHeightMm)
+
+              // 모던 헤더 디자인 - 상단 악센트 라인
+              pdf.setDrawColor(100, 100, 100)  // 진한 회색
+              pdf.setLineWidth(0.5)
+              pdf.line(marginLeft, 8, a4Width - marginLeft, 8)
+
+              // 헤더 우측에 문서 제목 (있는 경우)
+              if (title?.trim()) {
+                pdf.setFont('NotoSansKR', 'normal')
+                pdf.setFontSize(8)
+                pdf.setTextColor(120, 120, 120)
+                pdf.text(title.trim(), a4Width - marginLeft, 6, { align: 'right' })
+              }
+
+              // 모던 푸터 디자인 - 하단 악센트 라인
+              pdf.setDrawColor(100, 100, 100)
+              pdf.setLineWidth(0.5)
+              pdf.line(marginLeft, a4Height - 8, a4Width - marginLeft, a4Height - 8)
+
+              // 페이지 번호 (중앙 하단)
+              pdf.setFont('NotoSansKR', 'normal')
+              pdf.setFontSize(9)
+              pdf.setTextColor(80, 80, 80)
+              pdf.text(`${contentPageNumber}`, a4Width / 2, a4Height - 5, { align: 'center' })
+            }
+
+            sourceY = safeEndY
+          }
+        }
+
+        // PDF 다운로드
+        const fileName = title?.trim() ? `${title.trim()}.pdf` : '문서.pdf'
+        pdf.save(fileName)
+
+      } catch (error) {
+        console.error('PDF 생성 오류:', error)
+        alert('PDF 생성 중 오류가 발생했습니다.')
+      } finally {
+        printRef.current.removeAttribute("data-pdf-capture-root")
+        // oklch 스타일 복원
+        restoreOklchStyles(disabledSheets, newStyle)
+        setIsPrinting(false)
+      }
     }
   }
 
@@ -579,11 +661,11 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
               className="gap-2 shadow-sm"
             >
               {isPrinting ? (
-                <>준비 중...</>
+                <>PDF 생성 중...</>
               ) : (
                 <>
                   <Printer className="h-4 w-4" />
-                  <span>인쇄 / PDF 저장</span>
+                  <span>PDF 저장</span>
                 </>
               )}
             </Button>

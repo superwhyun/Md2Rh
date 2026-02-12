@@ -243,7 +243,6 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
             style={{
               ...style.styles.body,
               padding: '1.5mm',
-              border: '1px dashed #ccc',
               margin: '12mm',
               minHeight: 'calc(297mm - 24mm)',
               boxSizing: 'border-box',
