@@ -114,55 +114,156 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
             width: '210mm',
             height: '297mm',
             padding: '0',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           } : {
             width: '210mm',
             height: '297mm',
             padding: '0',
             boxSizing: 'border-box',
             transform: 'scale(0.75)',
-            transformOrigin: 'top left', // Changed to top left to fit in wrapper
-            position: 'absolute', // Absolute to sit inside relative wrapper
-            top: 0, left: 0
+            transformOrigin: 'top left',
+            position: 'absolute',
+            top: 0, left: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}>
+            {/* 상단 장식 바 */}
+            <div style={{
+              width: '100%',
+              height: '30px',
+              minHeight: '30px',
+              background: 'linear-gradient(90deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%)',
+              flexShrink: 0
+            }} />
+
+            {/* 메인 컨텐츠 래퍼 - flex:1로 남은 공간 차지 */}
             <div style={{
               ...style?.styles.body,
-              padding: '10mm',
-              margin: '10mm',
-              height: 'calc(297mm - 20mm)',
-              boxSizing: 'border-box',
+              flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              paddingTop: '15%'
+              padding: '40px 60px',
+              boxSizing: 'border-box'
             }}>
-              <h1 style={{
-                ...style?.styles.h1,
-                fontSize: '2.5rem',
-                fontWeight: 'bold',
-                fontFamily: 'Pretendard, sans-serif',
-                backgroundColor: 'transparent',
-                marginBottom: '0',
-                lineHeight: '1.1',
-                flex: 'none',
-                color: '#000000'
+              {/* 상단 장식 라인 */}
+              <div style={{
+                width: '150px',
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, #3498db, transparent)',
+                margin: '0 auto 60px auto',
+                flexShrink: 0
+              }} />
+
+              {/* 상단 여백 */}
+              <div style={{ flex: '0 0 80px' }} />
+
+              {/* 메인 컨텐츠 영역 */}
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                textAlign: 'center'
               }}>
-                {title}
-              </h1>
-              <div style={{ flex: '1', display: 'flex', alignItems: 'center' }}>
-                <p style={{
-                  ...style?.styles.p,
-                  fontSize: '1.5rem',
-                  color: '#666',
-                  margin: '0'
+                {/* 제목 상단 장식 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px',
+                  marginBottom: '25px'
                 }}>
-                  {today}
-                </p>
+                  <div style={{ width: '40px', height: '1px', background: '#bdc3c7' }} />
+                  <div style={{
+                    width: '10px',
+                    height: '10px',
+                    background: '#3498db',
+                    borderRadius: '2px'
+                  }} />
+                  <div style={{ width: '40px', height: '1px', background: '#bdc3c7' }} />
+                </div>
+
+                {/* 제목 */}
+                <h1 style={{
+                  ...style?.styles.h1,
+                  fontSize: '2.8rem',
+                  fontWeight: '700',
+                  fontFamily: 'Pretendard, sans-serif',
+                  backgroundColor: 'transparent',
+                  marginBottom: '25px',
+                  lineHeight: '1.3',
+                  color: '#2c3e50',
+                  letterSpacing: '-0.02em',
+                  maxWidth: '85%',
+                  margin: '0 auto 25px auto'
+                }}>
+                  {title}
+                </h1>
+
+                {/* 제목 하단 장식 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px',
+                  marginBottom: '50px'
+                }}>
+                  <div style={{ width: '40px', height: '1px', background: '#bdc3c7' }} />
+                  <div style={{
+                    width: '10px',
+                    height: '10px',
+                    background: '#3498db',
+                    borderRadius: '2px'
+                  }} />
+                  <div style={{ width: '40px', height: '1px', background: '#bdc3c7' }} />
+                </div>
+
+                {/* 날짜 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  padding: '12px 30px',
+                  background: '#f8f9fa',
+                  borderRadius: '30px',
+                  border: '1px solid #e9ecef'
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7f8c8d" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <p style={{
+                    ...style?.styles.p,
+                    fontSize: '1.1rem',
+                    color: '#7f8c8d',
+                    margin: '0',
+                    fontWeight: '500'
+                  }}>
+                    {today}
+                  </p>
+                </div>
               </div>
+
+              {/* 하단 푸터 영역 */}
               {coverFooter && (
-                <div style={{ flex: 'none', width: '100%', marginTop: 'auto', textAlign: 'left', paddingTop: '40px' }}>
-                  <div style={{ ...style?.styles.p, fontSize: '1rem', color: '#444' }}>
+                <div style={{
+                  width: '100%',
+                  paddingTop: '30px',
+                  borderTop: '1px solid #e9ecef',
+                  flexShrink: 0
+                }}>
+                  <div style={{
+                    ...style?.styles.p,
+                    fontSize: '0.95rem',
+                    color: '#555',
+                    textAlign: 'left'
+                  }}>
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       components={{
@@ -185,7 +286,37 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
                   </div>
                 </div>
               )}
+
+              {/* 하단 장식 - absolute 대신 margin으로 처리 */}
+              {!coverFooter && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginTop: 'auto',
+                  paddingBottom: '20px'
+                }}>
+                  <div style={{ width: '30px', height: '1px', background: '#bdc3c7' }} />
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: '#3498db'
+                  }} />
+                  <div style={{ width: '30px', height: '1px', background: '#bdc3c7' }} />
+                </div>
+              )}
             </div>
+
+            {/* 하단 장식 바 - absolute 제거, flexbox 사용 */}
+            <div style={{
+              width: '100%',
+              height: '15px',
+              minHeight: '15px',
+              background: 'linear-gradient(90deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%)',
+              flexShrink: 0
+            }} />
           </div>
         </div>
       </div>

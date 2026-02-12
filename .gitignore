@@ -39,3 +39,7 @@ pnpm-debug.log*
 
 # TypeScript
 tsconfig.tsbuildinfo
+
+# Serena & Agent
+.serena/
+.agent/
