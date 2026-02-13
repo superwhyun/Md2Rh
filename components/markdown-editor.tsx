@@ -51,6 +51,7 @@ export function MarkdownEditor({
   const [isImageDragOver, setIsImageDragOver] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+
   const handleToolbarInsert = (prefix: string, suffix: string = "", placeholder: string = "") => {
     if (!textareaRef.current) return
 
@@ -260,6 +261,121 @@ export function MarkdownEditor({
   }
 
 
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    console.log('[Paste] Event triggered')
+    
+    if (!textareaRef.current) {
+      console.log('[Paste] No textarea ref')
+      return
+    }
+
+    const clipboardData = e.clipboardData
+    if (!clipboardData) {
+      console.log('[Paste] No clipboard data')
+      return
+    }
+
+    console.log('[Paste] Types:', clipboardData.types)
+    console.log('[Paste] Files:', clipboardData.files?.length)
+    console.log('[Paste] Items:', clipboardData.items?.length)
+
+    // items에서 이미지 찾기
+    const items = clipboardData.items
+    let imageItems: DataTransferItem[] = []
+    
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        console.log(`[Paste] Item ${i}: type=${item.type}, kind=${item.kind}`)
+        if (item.type.startsWith('image/')) {
+          imageItems.push(item)
+        }
+      }
+    }
+
+    // files에서도 이미지 찾기 (fallback)
+    const files = clipboardData.files
+    let imageFiles: File[] = []
+    
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        console.log(`[Paste] File ${i}: type=${file.type}, name=${file.name}`)
+        if (file.type.startsWith('image/')) {
+          imageFiles.push(file)
+        }
+      }
+    }
+
+    // 이미지가 없으면 기본 동작 허용
+    if (imageItems.length === 0 && imageFiles.length === 0) {
+      console.log('[Paste] No images found, allowing default')
+      return
+    }
+
+    // 이미지가 있으면 기본 붙여넣기 동작 방지
+    e.preventDefault()
+    console.log('[Paste] Images found, handling custom paste')
+
+    const textarea = textareaRef.current
+    let insertPosition = textarea.selectionStart ?? value.length
+
+    // items에서 이미지 처리
+    for (const item of imageItems) {
+      const file = item.getAsFile()
+      if (!file) continue
+
+      console.log('[Paste] Processing item file:', file.name, file.type)
+
+      // Blob URL 생성
+      const blobUrl = URL.createObjectURL(file)
+      
+      // 파일명 생성
+      const extension = file.type.split('/')[1] || 'png'
+      const filename = file.name || `image_${Date.now()}.${extension}`
+      
+      const imageMarkdown = `![${filename}](${blobUrl})\n`
+      console.log('[Paste] Inserting markdown:', imageMarkdown)
+
+      // 현재 커서 위치에 이미지 삽입
+      const currentValue = textarea.value
+      const newValue = currentValue.slice(0, insertPosition) + imageMarkdown + currentValue.slice(insertPosition)
+      onChange(newValue)
+
+      // 다음 이미지를 위해 위치 업데이트
+      insertPosition += imageMarkdown.length
+    }
+
+    // files에서 이미지 처리 (items에서 처리 못한 경우)
+    for (const file of imageFiles) {
+      // items에서 이미 처리했으면 스킵
+      if (imageItems.length > 0) continue
+
+      console.log('[Paste] Processing file:', file.name, file.type)
+
+      const blobUrl = URL.createObjectURL(file)
+      const extension = file.type.split('/')[1] || 'png'
+      const filename = file.name || `image_${Date.now()}.${extension}`
+      
+      const imageMarkdown = `![${filename}](${blobUrl})\n`
+
+      const currentValue = textarea.value
+      const newValue = currentValue.slice(0, insertPosition) + imageMarkdown + currentValue.slice(insertPosition)
+      onChange(newValue)
+
+      insertPosition += imageMarkdown.length
+    }
+
+    // 커서 위치 업데이트
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.selectionStart = insertPosition
+        textareaRef.current.selectionEnd = insertPosition
+        textareaRef.current.focus()
+      }
+    }, 0)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Undo: Ctrl+Z
@@ -485,6 +601,7 @@ export function MarkdownEditor({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder="# 제목을 입력하세요&#10;&#10;여기에 마크다운을 작성하세요..."
             className="h-full resize-none font-mono text-sm flex-1 leading-relaxed bg-[#fafafa] dark:bg-[#1a1a1a] border-muted-foreground/20 focus:bg-background transition-colors"
             spellCheck={false}

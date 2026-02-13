@@ -258,13 +258,21 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
                     src={part.src}
                     alt={part.alt || ''}
                     style={{
-                      maxWidth: '100%',
+                      maxWidth: '80%',
                       height: 'auto',
-                      margin: '1rem 0',
+                      margin: '1rem auto',
                       display: 'block'
                     }}
                     onError={(e) => { }}
-                    onLoad={() => { }}
+                    onLoad={(e) => {
+                      const img = e.target as HTMLImageElement
+                      const dpr = window.devicePixelRatio || 1
+                      if (dpr > 1) {
+                        const naturalWidth = img.naturalWidth / dpr
+                        img.style.width = `${naturalWidth}px`
+                        img.style.maxWidth = '80%'
+                      }
+                    }}
                   />
                 )
               } else {
@@ -594,13 +602,22 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
                             alt={alt || ''}
                             title={title || alt || ''}
                             onError={handleImageError}
-                            onLoad={handleImageLoad}
+                            onLoad={(e) => {
+                              handleImageLoad()
+                              const img = e.target as HTMLImageElement
+                              const dpr = window.devicePixelRatio || 1
+                              if (dpr > 1) {
+                                const naturalWidth = img.naturalWidth / dpr
+                                img.style.width = `${naturalWidth}px`
+                                img.style.maxWidth = '80%'
+                              }
+                            }}
                             crossOrigin="anonymous"
                             referrerPolicy="no-referrer"
                             style={{
-                              maxWidth: '100%',
+                              maxWidth: '80%',
                               height: 'auto',
-                              margin: '1rem 0',
+                              margin: '1rem auto',
                               display: 'block'
                             }}
                           />
