@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { ColorPicker } from "@/components/color-picker"
 import { fontCategories, getFontsByCategory } from "@/lib/fonts"
-import type { ULLevelStyle, OLLevelStyle } from "@/lib/default-styles"
+import type { ULLevelStyle, OLLevelStyle, NumberingType } from "@/lib/default-styles"
+import { olNumberingOptions } from "@/lib/default-styles"
 
 interface ListLevelCardProps {
     levelIndex: number
@@ -49,13 +50,33 @@ export function ListLevelCard({ levelIndex, level, type, onUpdate }: ListLevelCa
                             </div>
                         </>
                     ) : (
-                        <div>
-                            <Label>숫자 간격</Label>
-                            <Input
-                                value={olLevel.numberSpacing || '0.3em'}
-                                onChange={(e) => onUpdate('numberSpacing', e.target.value)}
-                                placeholder="0.3em"
-                            />
+                        <div className="space-y-4">
+                            <div>
+                                <Label>숫자 간격</Label>
+                                <Input
+                                    value={olLevel.numberSpacing || '0.3em'}
+                                    onChange={(e) => onUpdate('numberSpacing', e.target.value)}
+                                    placeholder="0.3em"
+                                />
+                            </div>
+                            <div>
+                                <Label>넘버링 형식</Label>
+                                <Select
+                                    value={olLevel.numberingType || 'number'}
+                                    onValueChange={(value) => onUpdate('numberingType', value as NumberingType)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {olNumberingOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     )}
 

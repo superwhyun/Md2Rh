@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ColorPicker } from "@/components/color-picker"
 import { fontCategories, getFontsByCategory } from "@/lib/fonts"
 import type { DocumentStyle, NumberingType } from "@/lib/default-styles"
+import { headingNumberingOptions } from "@/lib/default-styles"
 
 interface ElementStyleCardProps {
     elementName: string
@@ -29,15 +30,7 @@ export function ElementStyleCard({
 }: ElementStyleCardProps) {
     const isTableElement = elementKey === 'th' || elementKey === 'td'
 
-    const numberingOptions = [
-        { label: '숫자 (1., 2., 3.)', value: 'number' as NumberingType },
-        { label: '한글 (가., 나., 다.)', value: 'korean' as NumberingType },
-        { label: '괄호 (1), 2), 3))', value: 'parenthesis' as NumberingType },
-        { label: '로마숫자 (I., II., III.)', value: 'roman' as NumberingType },
-        { label: '한글 괄호 ((가), (나), (다))', value: 'korean_paren' as NumberingType },
-        { label: '숫자 괄호 ((1), (2), (3))', value: 'number_paren' as NumberingType },
-        { label: '없음', value: 'none' as NumberingType },
-    ]
+
 
     return (
         <Card>
@@ -209,7 +202,7 @@ export function ElementStyleCard({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {numberingOptions.map((option) => (
+                                {headingNumberingOptions.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
                                         {option.label}
                                     </SelectItem>

@@ -7,7 +7,25 @@ import minimalStyle from './styles/minimal.json'
 import cleanStyle from './styles/clean.json'
 import korGovStyle from './styles/KorGov.json'
 
-export type NumberingType = 'number' | 'korean' | 'parenthesis' | 'roman' | 'none' | 'korean_paren' | 'number_paren'
+export type NumberingType = 'number' | 'korean' | 'parenthesis' | 'roman' | 'none' | 'korean_paren' | 'number_paren' | 'circle' | 'alpha' | 'alpha_paren' | 'roman_lower'
+
+export const headingNumberingOptions = [
+  { label: '숫자 (1., 2., 3.)', value: 'number' as NumberingType },
+  { label: '한글 (가., 나., 다.)', value: 'korean' as NumberingType },
+  { label: '괄호 (1), 2), 3))', value: 'parenthesis' as NumberingType },
+  { label: '로마숫자 (I., II., III.)', value: 'roman' as NumberingType },
+  { label: '한글 괄호 ((가), (나), (다))', value: 'korean_paren' as NumberingType },
+  { label: '숫자 괄호 ((1), (2), (3))', value: 'number_paren' as NumberingType },
+  { label: '없음', value: 'none' as NumberingType },
+]
+
+export const olNumberingOptions = [
+  ...headingNumberingOptions,
+  { label: '원문자 (①, ②, ③)', value: 'circle' as NumberingType },
+  { label: '알파벳 (a., b., c.)', value: 'alpha' as NumberingType },
+  { label: '알파벳 괄호 ((a), (b), (c))', value: 'alpha_paren' as NumberingType },
+  { label: '로마숫자 소문자 (i., ii., iii.)', value: 'roman_lower' as NumberingType },
+]
 
 export interface HeadingNumbering {
   h1: NumberingType

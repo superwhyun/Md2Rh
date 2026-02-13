@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { DocumentStyle, NumberingType, ULLevelStyle, OLLevelStyle } from "@/lib/default-styles"
+import { headingNumberingOptions, olNumberingOptions } from "@/lib/default-styles"
 import { ColorPicker } from "@/components/color-picker"
 import { fontOptions, fontCategories, getFontsByCategory } from "@/lib/fonts"
 import { ArrowLeft, Save, RotateCcw } from "lucide-react"
@@ -140,15 +141,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
     { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'roman' }
   ]
 
-  const numberingOptions = [
-    { label: '숫자 (1., 2., 3.)', value: 'number' as NumberingType },
-    { label: '한글 (가., 나., 다.)', value: 'korean' as NumberingType },
-    { label: '괄호 (1), 2), 3))', value: 'parenthesis' as NumberingType },
-    { label: '로마숫자 (I., II., III.)', value: 'roman' as NumberingType },
-    { label: '한글 괄호 ((가), (나), (다))', value: 'korean_paren' as NumberingType },
-    { label: '숫자 괄호 ((1), (2), (3))', value: 'number_paren' as NumberingType },
-    { label: '없음', value: 'none' as NumberingType },
-  ]
+
 
 
   const renderStyleControls = (elementName: string, elementKey: keyof DocumentStyle["styles"], headingLevel?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5') => {
@@ -331,7 +324,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {numberingOptions.map((option) => (
+                  {headingNumberingOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -647,7 +640,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {numberingOptions.map((option) => (
+                        {olNumberingOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

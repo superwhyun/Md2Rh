@@ -16,6 +16,15 @@ export function getNumberingString(type: NumberingType, index: number): string {
       return `(${koreanParenChars[index % koreanParenChars.length]}) `
     case 'number_paren':
       return `(${index + 1}) `
+    case 'circle':
+      const circleChars = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳']
+      return index < circleChars.length ? `${circleChars[index]} ` : `${index + 1}. `
+    case 'alpha':
+      return `${String.fromCharCode(97 + (index % 26))}. `
+    case 'alpha_paren':
+      return `(${String.fromCharCode(97 + (index % 26))}) `
+    case 'roman_lower':
+      return `${toRoman(index + 1).toLowerCase()}. `
     case 'none':
       return ''
     default:
@@ -26,7 +35,7 @@ export function getNumberingString(type: NumberingType, index: number): string {
 function toRoman(num: number): string {
   const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
   const symbols = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
-  
+
   let result = ''
   for (let i = 0; i < values.length; i++) {
     while (num >= values[i]) {
@@ -40,7 +49,7 @@ function toRoman(num: number): string {
 export function parseMarkdownHeadings(markdown: string) {
   const lines = markdown.split('\n')
   const headings: Array<{ level: number; text: string; line: number }> = []
-  
+
   lines.forEach((line, index) => {
     const match = line.match(/^(#{1,3})\s+(.+)/)
     if (match) {
@@ -51,7 +60,7 @@ export function parseMarkdownHeadings(markdown: string) {
       })
     }
   })
-  
+
   return headings
 }
 
@@ -62,13 +71,13 @@ export function addNumberingToMarkdown(markdown: string, h1Type: NumberingType, 
 
   const lines = markdown.split('\n')
   const counters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0 }
-  
+
   return lines.map(line => {
     const match = line.match(/^(#{1,5})\s+(.+)/)
     if (match) {
       const level = match[1].length
       const text = match[2]
-      
+
       if (level === 1) {
         counters.h1++
         counters.h2 = 0
