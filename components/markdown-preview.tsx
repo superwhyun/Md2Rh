@@ -750,63 +750,53 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
   const finalMarkdown = parseListDepth(numberedMarkdown)
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="bg-background border-b z-10 shrink-0">
-        <div className="p-4 flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block ml-1">
-              Live Preview
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm bg-secondary/50 px-2 py-1 rounded text-secondary-foreground">
-                {style?.name || '기본 서식'}
-              </span>
-            </div>
-          </div>
+    <div className="h-full flex flex-col bg-muted/20">
+      {/* Preview Header */}
+      <div className="h-14 border-b bg-background flex items-center justify-between px-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-foreground">{style?.name || '기본 서식'}</span>
+          <span className="text-xs text-muted-foreground">미리보기</span>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-md mr-2">
-              <input
-                type="color"
-                value={highlightColor}
-                onChange={(e) => setHighlightColor(e.target.value)}
-                className="w-6 h-6 p-0 border-0 rounded cursor-pointer overflow-hidden"
-                title="하이라이트 색상"
-              />
-              <Button
-                onClick={() => setIsHighlightMode(!isHighlightMode)}
-                variant={isHighlightMode ? "secondary" : "ghost"}
-                size="sm"
-                className={`h-8 w-8 p-0 ${isHighlightMode ? "bg-accent text-accent-foreground ring-2 ring-primary" : "hover:bg-secondary/50"}`}
-                title={isHighlightMode ? "하이라이트 모드 끄기" : "하이라이트 모드 켜기 (선택 시 자동 적용)"}
-              >
-                <Highlighter className="h-4 w-4" style={{ color: highlightColor }} />
-              </Button>
-            </div>
-
+        <div className="flex items-center gap-2">
+          {/* Highlight Controls */}
+          <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
+            <input
+              type="color"
+              value={highlightColor}
+              onChange={(e) => setHighlightColor(e.target.value)}
+              className="w-5 h-5 p-0 border-0 rounded cursor-pointer overflow-hidden"
+              title="하이라이트 색상"
+            />
             <Button
-              onClick={handlePrint}
-              disabled={isPrinting}
-              variant="default"
+              onClick={() => setIsHighlightMode(!isHighlightMode)}
+              variant={isHighlightMode ? "secondary" : "ghost"}
               size="sm"
-              className="gap-2 shadow-sm"
+              className={`h-6 w-6 p-0 ${isHighlightMode ? "ring-1 ring-primary" : ""}`}
+              title={isHighlightMode ? "하이라이트 모드 끄기" : "하이라이트 모드 켜기"}
             >
-              {isPrinting ? (
-                <>PDF 생성 중...</>
-              ) : (
-                <>
-                  <Printer className="h-4 w-4" />
-                  <span>PDF 저장</span>
-                </>
-              )}
+              <Highlighter className="h-3 w-3" style={{ color: highlightColor }} />
             </Button>
           </div>
+
+          <div className="w-px h-4 bg-border mx-1" />
+
+          {/* PDF Button */}
+          <Button
+            onClick={handlePrint}
+            disabled={isPrinting}
+            size="sm"
+            className="gap-1.5 h-8 text-xs"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            {isPrinting ? "생성 중..." : "PDF 저장"}
+          </Button>
         </div>
       </div>
 
+      {/* Preview Content */}
       <div
-        className="flex-1 overflow-auto bg-gray-100 dark:bg-muted/10 w-full"
-        style={{ padding: '20px 0' }}
+        className="flex-1 overflow-auto w-full py-6"
         onMouseUp={handleMouseUp}
       >
         <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>

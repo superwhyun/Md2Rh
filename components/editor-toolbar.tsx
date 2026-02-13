@@ -13,17 +13,42 @@ import {
     Heading2,
     Heading3,
     Quote,
-    Table
+    Table,
+    Undo,
+    Redo
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface EditorToolbarProps {
     onInsert: (prefix: string, suffix?: string, placeholder?: string) => void
+    onUndo?: () => void
+    onRedo?: () => void
+    canUndo?: boolean
+    canRedo?: boolean
 }
 
-export function EditorToolbar({ onInsert }: EditorToolbarProps) {
+export function EditorToolbar({ 
+    onInsert, 
+    onUndo, 
+    onRedo, 
+    canUndo = false, 
+    canRedo = false 
+}: EditorToolbarProps) {
     return (
-        <div className="flex items-center gap-1 p-1 px-2 border-b bg-background overflow-x-auto sticky top-0 z-10 mx-2 mt-2 border rounded-md shadow-sm">
+        <div className="flex items-center gap-0.5 px-2 py-1.5 bg-muted/30 overflow-x-auto">
+            <ToolbarButton
+                onClick={() => onUndo?.()}
+                icon={<Undo className="h-4 w-4" />}
+                label="실행 취소 (Ctrl+Z)"
+                disabled={!canUndo}
+            />
+            <ToolbarButton
+                onClick={() => onRedo?.()}
+                icon={<Redo className="h-4 w-4" />}
+                label="다시 실행 (Ctrl+Y)"
+                disabled={!canRedo}
+            />
+            <div className="w-px h-4 bg-border mx-1" />
             <ToolbarButton
                 onClick={() => onInsert("# ", "")}
                 icon={<Heading1 className="h-4 w-4" />}
@@ -92,12 +117,25 @@ export function EditorToolbar({ onInsert }: EditorToolbarProps) {
     )
 }
 
-function ToolbarButton({ onClick, icon, label }: { onClick: () => void, icon: React.ReactNode, label: string }) {
+interface ToolbarButtonProps {
+    onClick: () => void
+    icon: React.ReactNode
+    label: string
+    disabled?: boolean
+}
+
+function ToolbarButton({ onClick, icon, label, disabled }: ToolbarButtonProps) {
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClick}>
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8" 
+                        onClick={onClick}
+                        disabled={disabled}
+                    >
                         {icon}
                     </Button>
                 </TooltipTrigger>

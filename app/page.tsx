@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { MarkdownEditor } from "@/components/markdown-editor"
 import { MarkdownPreview } from "@/components/markdown-preview"
 import { StyleManager } from "@/components/style-manager"
 // import { StyleSelector } from "@/components/style-selector" // Moved to MarkdownEditor
 import { HelpModal } from "@/components/help-modal"
 import { Button } from "@/components/ui/button"
-import { Github, Settings, HelpCircle, FileText, LayoutTemplate, Printer, Download } from "lucide-react"
+import { Github, HelpCircle, FileText, LayoutTemplate } from "lucide-react"
 import { type DocumentStyle, getDefaultStyles } from "@/lib/default-styles"
 import { ModeToggle } from "@/components/mode-toggle"
 import {
@@ -15,6 +15,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+
+// Undo/Redo history state
+interface HistoryState {
+  past: string[]
+  present: string
+  future: string[]
+}
 
 export default function Home() {
   const [title, setTitle] = useState("")
@@ -72,6 +79,62 @@ export default function Home() {
 `)
   const [coverFooter, setCoverFooter] = useState("")
 
+  // Undo/Redo state management
+  const [history, setHistory] = useState<HistoryState>({
+    past: [],
+    present: markdown,
+    future: []
+  })
+
+  // Update markdown with history tracking
+  const updateMarkdown = useCallback((newValue: string, addToHistory: boolean = true) => {
+    if (addToHistory) {
+      setHistory(prev => ({
+        past: [...prev.past, prev.present].slice(-50), // Keep last 50 states
+        present: newValue,
+        future: []
+      }))
+    }
+    setMarkdown(newValue)
+  }, [])
+
+  // Undo function
+  const undo = useCallback(() => {
+    setHistory(prev => {
+      if (prev.past.length === 0) return prev
+      const previous = prev.past[prev.past.length - 1]
+      const newPast = prev.past.slice(0, -1)
+      setMarkdown(previous)
+      return {
+        past: newPast,
+        present: previous,
+        future: [prev.present, ...prev.future]
+      }
+    })
+  }, [])
+
+  // Redo function
+  const redo = useCallback(() => {
+    setHistory(prev => {
+      if (prev.future.length === 0) return prev
+      const next = prev.future[0]
+      const newFuture = prev.future.slice(1)
+      setMarkdown(next)
+      return {
+        past: [...prev.past, prev.present],
+        present: next,
+        future: newFuture
+      }
+    })
+  }, [])
+
+  // Sync markdown with history.present when history changes
+  useEffect(() => {
+    if (history.present !== markdown) {
+      setMarkdown(history.present)
+    }
+  }, [history.present])
+
   const [styles, setStyles] = useState<DocumentStyle[]>([])
   const [selectedStyleId, setSelectedStyleId] = useState<string>("")
   const [isStyleManagerOpen, setIsStyleManagerOpen] = useState(false)
@@ -120,51 +183,46 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      {/* 상단 툴바 */}
-      {/* 상단 툴바 */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 flex items-center gap-4 shrink-0 z-50 shadow-sm relative">
-        <div className="flex items-center gap-2 mr-4">
-          <div className="bg-primary/10 p-2 rounded-lg text-primary">
-            <Settings className="h-5 w-5" />
+      {/* Header */}
+      <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 shrink-0 z-50">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground shadow-sm">
+            <FileText className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <h1 className="font-bold text-lg leading-none tracking-tight">Md2Rh Converter</h1>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Markdown to Report HTML</span>
+            <h1 className="font-semibold text-sm leading-tight">Md2Rh</h1>
+            <span className="text-[10px] text-muted-foreground">Markdown to Report</span>
           </div>
         </div>
 
-        <div className="h-8 w-px bg-border/60 mx-2" />
-
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-2">
+        {/* Actions */}
+        <div className="flex items-center gap-1">
           <Button
             variant={isStyleManagerOpen ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setIsStyleManagerOpen(!isStyleManagerOpen)}
-            className="flex items-center gap-2 h-9 border border-transparent hover:border-border/50 transition-all font-medium mr-2"
+            className="gap-2 h-8 text-xs"
           >
-            <LayoutTemplate className="h-4 w-4" />
-            <span>서식 관리자</span>
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            서식
           </Button>
+
+          <div className="w-px h-4 bg-border mx-2" />
 
           <ModeToggle />
 
-          <div className="w-px h-4 bg-border/60 mx-1" />
-
-          <Button variant="ghost" size="icon" onClick={() => setIsHelpModalOpen(true)} className="text-muted-foreground hover:text-foreground">
-            <HelpCircle className="h-5 w-5" />
-            <span className="sr-only">사용법</span>
+          <Button variant="ghost" size="icon" onClick={() => setIsHelpModalOpen(true)} className="h-8 w-8">
+            <HelpCircle className="h-4 w-4" />
           </Button>
 
-          <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="icon" asChild className="h-8 w-8">
             <a href="https://github.com/superwhyun/Md2Rh" target="_blank" rel="noopener noreferrer">
-              <Github className="h-5 w-5" />
-              <span className="sr-only">GitHub</span>
+              <Github className="h-4 w-4" />
             </a>
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* 메인 컨텐츠 영역 */}
       <div className="flex-1 flex overflow-hidden">
@@ -175,21 +233,22 @@ export default function Home() {
                 <ResizablePanel
                   id="sidebar"
                   order={1}
-                  defaultSize={25}
-                  minSize={20}
-                  maxSize={40}
+                  defaultSize={22}
+                  minSize={18}
+                  maxSize={35}
                   className="bg-background"
                 >
                   <div className="h-full flex flex-col border-r">
-                    <div className="p-4 border-b flex items-center justify-between bg-muted/30">
-                      <h2 className="font-semibold">문서 서식 관리자</h2>
-                      <Button variant="ghost" size="sm" onClick={() => {
+                    <div className="h-10 px-3 border-b flex items-center justify-between bg-muted/30">
+                      <span className="text-xs font-medium text-muted-foreground">서식 관리자</span>
+                      <Button variant="ghost" size="icon" onClick={() => {
                         setIsStyleManagerOpen(false)
-                      }}>
-                        ✕
+                        setTempStyle(null)
+                      }} className="h-6 w-6">
+                        <span className="text-xs">✕</span>
                       </Button>
                     </div>
-                    <div className="flex-1 overflow-auto p-4">
+                    <div className="flex-1 overflow-auto p-3">
                       <StyleManager
                         isOpen={true}
                         onClose={() => {
@@ -210,11 +269,15 @@ export default function Home() {
               </>
             )}
 
-            <ResizablePanel id="editor" order={2} defaultSize={isStyleManagerOpen ? 35 : 50} minSize={25}>
-              <div className="h-full flex flex-col border-r bg-background">
+            <ResizablePanel id="editor" order={2} defaultSize={isStyleManagerOpen ? 37 : 50} minSize={25}>
+              <div className="h-full flex flex-col bg-background">
                 <MarkdownEditor
                   value={markdown}
-                  onChange={setMarkdown}
+                  onChange={updateMarkdown}
+                  onUndo={undo}
+                  onRedo={redo}
+                  canUndo={history.past.length > 0}
+                  canRedo={history.future.length > 0}
                   title={title}
                   onTitleChange={setTitle}
                   coverFooter={coverFooter}

@@ -15,6 +15,10 @@ import type { DocumentStyle } from "@/lib/default-styles"
 interface MarkdownEditorProps {
   value: string
   onChange: (value: string) => void
+  onUndo?: () => void
+  onRedo?: () => void
+  canUndo?: boolean
+  canRedo?: boolean
   title: string
   onTitleChange: (title: string) => void
   coverFooter: string
@@ -24,7 +28,21 @@ interface MarkdownEditorProps {
   onStyleSelect: (id: string) => void
 }
 
-export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFooter, onCoverFooterChange, styles, selectedStyleId, onStyleSelect }: MarkdownEditorProps) {
+export function MarkdownEditor({ 
+  value, 
+  onChange, 
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
+  title, 
+  onTitleChange, 
+  coverFooter, 
+  onCoverFooterChange, 
+  styles, 
+  selectedStyleId, 
+  onStyleSelect 
+}: MarkdownEditorProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [isImageDragOver, setIsImageDragOver] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -240,6 +258,20 @@ export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFoo
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Undo: Ctrl+Z
+    if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+      e.preventDefault()
+      onUndo?.()
+      return
+    }
+    
+    // Redo: Ctrl+Y or Ctrl+Shift+Z
+    if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+      e.preventDefault()
+      onRedo?.()
+      return
+    }
+
     if (e.key === "Tab") {
       e.preventDefault()
 
@@ -324,89 +356,100 @@ export function MarkdownEditor({ value, onChange, title, onTitleChange, coverFoo
 
   return (
     <Tabs defaultValue="main" className="h-full flex flex-col">
-      <div className="bg-background border-b z-10 shrink-0 px-4 pt-4 pb-2">
-        <div className="mb-4 flex items-center justify-end gap-3">
-          <span className="text-sm font-semibold text-muted-foreground">스타일 선택</span>
-          <div className="w-[200px]">
-            <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={onStyleSelect} />
+      {/* Editor Header */}
+      <div className="border-b bg-muted/30 shrink-0">
+        {/* Toolbar Row */}
+        <div className="px-3 py-2 border-b flex items-center justify-between">
+          <TabsList className="h-7 bg-background">
+            <TabsTrigger value="main" className="text-xs px-3 py-1 h-6">본문</TabsTrigger>
+            <TabsTrigger value="cover" className="text-xs px-3 py-1 h-6">표지</TabsTrigger>
+          </TabsList>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">스타일</span>
+            <div className="w-[140px]">
+              <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={onStyleSelect} />
+            </div>
           </div>
         </div>
-
-        <TabsList className="grid w-full grid-cols-2 mb-2">
-          <TabsTrigger value="cover">Cover Page</TabsTrigger>
-          <TabsTrigger value="main">Main Content</TabsTrigger>
-        </TabsList>
+        
+        {/* Format Toolbar - Only show in main tab */}
+        <TabsContent value="main" className="mt-0">
+          <EditorToolbar 
+            onInsert={handleToolbarInsert} 
+            onUndo={onUndo}
+            onRedo={onRedo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+          />
+        </TabsContent>
       </div>
 
-      <TabsContent value="cover" className="flex-1 p-4 space-y-6 overflow-auto mt-0">
-        <div className="space-y-4">
-          <Card className="p-4 space-y-4 border-muted">
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-semibold text-foreground block">
-                문서 제목 (Title)
+      {/* Cover Tab Content */}
+      <TabsContent value="cover" className="flex-1 overflow-auto mt-0">
+        <div className="p-4 space-y-4">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label htmlFor="title" className="text-xs font-medium text-foreground">
+                문서 제목
               </label>
-              <p className="text-xs text-muted-foreground">표지의 중앙에 크게 표시됩니다.</p>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
-                placeholder="제목 없는 문서"
-                className="font-bold text-lg"
+                placeholder="제목을 입력하세요"
+                className="h-9"
               />
             </div>
-          </Card>
 
-          <Card className="p-4 space-y-4 border-muted">
-            <div className="space-y-2">
-              <label htmlFor="coverFooter" className="text-sm font-semibold text-foreground block">
-                표지 하단 내용 (Footer Info)
+            <div className="space-y-1.5">
+              <label htmlFor="coverFooter" className="text-xs font-medium text-foreground">
+                표지 하단 정보
               </label>
-              <p className="text-xs text-muted-foreground">작성자, 작성일, 소속, 초록(Abstract) 등을 입력하세요. 마크다운 문법이 지원됩니다.</p>
+              <p className="text-[10px] text-muted-foreground">작성자, 작성일, 소속 등을 마크다운으로 입력</p>
               <Textarea
                 id="coverFooter"
                 value={coverFooter}
                 onChange={(e) => onCoverFooterChange(e.target.value)}
-                placeholder="예:&#13;&#10;**작성자**: 홍길동&#13;&#10;**부서**: 기획팀&#13;&#10;**날짜**: 2024.01.01"
-                className="min-h-[200px] font-mono text-sm resize-none"
+                placeholder="**작성자**: 홍길동  
+**부서**: 기획팀  
+**날짜**: 2024.01.01"
+                className="min-h-[160px] font-mono text-xs resize-none"
               />
             </div>
-          </Card>
+          </div>
         </div>
       </TabsContent>
 
+      {/* Main Content Tab */}
       <TabsContent value="main" className="flex-1 flex flex-col h-full mt-0 overflow-hidden relative">
-        <div className="absolute inset-0 flex flex-col">
-          <EditorToolbar onInsert={handleToolbarInsert} />
+        <div
+          className="flex-1 p-3 relative overflow-hidden flex flex-col"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <Textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="# 제목을 입력하세요&#10;&#10;여기에 마크다운을 작성하세요..."
+            className="h-full resize-none font-mono text-sm flex-1 leading-relaxed"
+            spellCheck={false}
+          />
 
-          <div
-            className="flex-1 p-4 relative overflow-hidden flex flex-col"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <Textarea
-              ref={textareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="여기에 본문 마크다운을 입력하세요..."
-              className="h-full resize-none font-mono text-sm flex-1"
-            />
-
-            {isImageDragOver && (
-              <>
-                <div className="absolute inset-4 border-2 border-dashed border-green-500 bg-green-50/30 rounded-lg pointer-events-none">
+          {isImageDragOver && (
+            <>
+              <div className="absolute inset-3 border-2 border-dashed border-primary/50 bg-primary/5 rounded-lg pointer-events-none flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl mb-1">🖼️</div>
+                  <p className="text-sm font-medium text-primary">이미지 드롭</p>
+                  <p className="text-xs text-muted-foreground">커서 위치에 삽입됩니다</p>
                 </div>
-                <div className="absolute top-6 right-6 pointer-events-none">
-                  <Card className="p-3 text-center bg-green-50 border-green-200">
-                    <div className="h-6 w-6 mx-auto mb-1 text-green-600">🖼️</div>
-                    <p className="text-xs font-medium text-green-700">이미지 드롭</p>
-                    <p className="text-xs text-green-500">커서 위치에 삽입</p>
-                  </Card>
-                </div>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </TabsContent>
     </Tabs>

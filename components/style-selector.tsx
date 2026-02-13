@@ -14,12 +14,12 @@ export function StyleSelector({ styles, selectedStyleId, onStyleSelect }: StyleS
 
   return (
     <Select value={selectedStyleId} onValueChange={onStyleSelect}>
-      <SelectTrigger className="w-64">
-        <SelectValue placeholder="서식을 선택하세요">{selectedStyle?.name}</SelectValue>
+      <SelectTrigger className="w-full h-7 text-xs">
+        <SelectValue placeholder="서식 선택">{selectedStyle?.name}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {styles.map((style) => (
-          <SelectItem key={style.id} value={style.id}>
+          <SelectItem key={style.id} value={style.id} className="text-xs">
             {style.name}
           </SelectItem>
         ))}
