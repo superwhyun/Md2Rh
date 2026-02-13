@@ -8,7 +8,8 @@ import { parseListDepth } from "@/lib/list-depth-parser"
 import { PaginatedPreview } from "@/components/paginated-preview"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { Printer, Highlighter } from "lucide-react"
+import { Printer, Highlighter, FileText } from "lucide-react"
+import { exportToDocx } from "@/lib/export-utils"
 import { Button } from "@/components/ui/button"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
@@ -111,26 +112,22 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '20px' }}>
         <div style={isPrinting ? { width: '210mm', height: '297mm' } : { width: '157.5mm', height: '222.75mm', position: 'relative' }}>
-          <div data-cover-page="true" className={isPrinting ? "bg-white" : "bg-white"} style={{ boxShadow: isPrinting ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' }} style={isPrinting ? {
+          <div data-cover-page="true" className="bg-white" style={{
             width: '210mm',
             height: '297mm',
             padding: '0',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden'
-          } : {
-            width: '210mm',
-            height: '297mm',
-            padding: '0',
-            boxSizing: 'border-box',
-            transform: 'scale(0.75)',
-            transformOrigin: 'top left',
-            position: 'absolute',
-            top: 0, left: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: isPrinting ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
+            ...(isPrinting ? {} : {
+              transform: 'scale(0.75)',
+              transformOrigin: 'top left',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            })
           }}>
             {/* 상단 장식 바 */}
             <div style={{
@@ -337,9 +334,22 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
     previousMedia: string | null
   }
 
-  // 스타일시트 비활성화 및 oklch가 없는 새 스타일 생성
-  const disableOklchStyles = (): { disabledSheets: DisabledStyleNode[], newStyle: HTMLStyleElement } => {
+  type CaptureStyleState = {
+    disabledSheets: DisabledStyleNode[]
+    injectedStyles: HTMLStyleElement[]
+  }
+
+  const UNSUPPORTED_COLOR_FUNCTION = /(oklch|oklab)\(/i
+
+  const normalizeUnsupportedColorFunctions = (cssText: string) =>
+    cssText
+      .replace(/oklch\([^)]+\)/gi, "rgb(0, 0, 0)")
+      .replace(/oklab\([^)]+\)/gi, "rgb(0, 0, 0)")
+
+  // html2canvas가 지원하지 않는 색 함수만 치환하고 기존 타이포 규칙(폰트 포함)은 유지
+  const prepareCaptureStyles = (): CaptureStyleState => {
     const disabledSheets: DisabledStyleNode[] = []
+    const injectedStyles: HTMLStyleElement[] = []
     const styleSheets = Array.from(document.styleSheets)
 
     styleSheets.forEach((sheet) => {
@@ -350,45 +360,51 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
 
       let hasOklch = false
       try {
-        hasOklch = Array.from(sheet.cssRules).some((rule) => rule.cssText.toLowerCase().includes("oklch("))
+        hasOklch = Array.from(sheet.cssRules).some((rule) => UNSUPPORTED_COLOR_FUNCTION.test(rule.cssText))
       } catch {
         // cross-origin stylesheet 접근 에러는 무시
       }
 
       if (!hasOklch) return
 
+      const previousMedia = ownerNode.getAttribute("media")
       disabledSheets.push({
         node: ownerNode,
-        previousMedia: ownerNode.getAttribute("media"),
+        previousMedia,
       })
       ownerNode.setAttribute("data-disabled-oklch", "true")
       ownerNode.setAttribute("media", "not all")
+
+      // 지원하지 않는 색 함수만 치환한 대체 스타일 주입
+      try {
+        const sanitizedCssText = Array.from(sheet.cssRules)
+          .map((rule) => normalizeUnsupportedColorFunctions(rule.cssText))
+          .join("\n")
+
+        if (sanitizedCssText.trim()) {
+          const sanitizedStyle = document.createElement("style")
+          sanitizedStyle.setAttribute("data-sanitized-oklch", "true")
+          sanitizedStyle.textContent = sanitizedCssText
+          document.head.appendChild(sanitizedStyle)
+          injectedStyles.push(sanitizedStyle)
+        }
+      } catch {
+        // cssRules 재읽기 실패 시 대체 스타일 없이 원본만 비활성화하지 않도록 복구
+        ownerNode.removeAttribute("data-disabled-oklch")
+        if (disabledSheets.length > 0) {
+          disabledSheets.pop()
+        }
+        if (previousMedia === null) {
+          ownerNode.removeAttribute("media")
+        } else {
+          ownerNode.setAttribute("media", previousMedia)
+        }
+      }
     })
 
-    // oklch 없는 기본 스타일 추가
-    const newStyle = document.createElement('style')
-    newStyle.textContent = `
-      :root {
-        --background: #f9f9fb !important;
-        --foreground: #211f26 !important;
-        --card: #ffffff !important;
-        --card-foreground: #211f26 !important;
-        --primary: #7f5a8f !important;
-        --primary-foreground: #f9f9fb !important;
-        --secondary: #e1d9e8 !important;
-        --secondary-foreground: #211f26 !important;
-        --muted: #e0dee5 !important;
-        --muted-foreground: #6d6478 !important;
-        --accent: #e8b2b6 !important;
-        --accent-foreground: #5a3d3e !important;
-        --border: #d3cfd8 !important;
-        --input: #ece9f0 !important;
-      }
-      .bg-white { background-color: #ffffff !important; }
-      .bg-background { background-color: #ffffff !important; }
-      body { color: #000000 !important; }
-      .text-foreground { color: #000000 !important; }
-      .border { border-color: #e5e7eb !important; }
+    // 캡처 안정화용 최소 오버라이드(폰트 관련 규칙은 건드리지 않음)
+    const captureStyle = document.createElement("style")
+    captureStyle.textContent = `
       [data-pdf-capture-root="true"] p,
       [data-pdf-capture-root="true"] li,
       [data-pdf-capture-root="true"] td,
@@ -405,13 +421,14 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
         -webkit-text-fill-color: currentColor;
       }
     `
-    document.head.appendChild(newStyle)
+    document.head.appendChild(captureStyle)
+    injectedStyles.push(captureStyle)
 
-    return { disabledSheets, newStyle }
+    return { disabledSheets, injectedStyles }
   }
 
   // 스타일 복원
-  const restoreOklchStyles = (disabledSheets: DisabledStyleNode[], newStyle: HTMLStyleElement) => {
+  const restoreCaptureStyles = ({ disabledSheets, injectedStyles }: CaptureStyleState) => {
     disabledSheets.forEach(({ node, previousMedia }) => {
       node.removeAttribute("data-disabled-oklch")
       if (previousMedia === null) {
@@ -420,7 +437,7 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
         node.setAttribute("media", previousMedia)
       }
     })
-    newStyle.remove()
+    injectedStyles.forEach((styleNode) => styleNode.remove())
   }
 
   const normalizeHighlightTextForCanvas = (doc: Document) => {
@@ -532,17 +549,36 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
   }
 
   const handlePrint = async () => {
+    if (!style) return
+
     if (printRef.current && !isPrinting) {
       setIsPrinting(true)
 
-      // oklch 스타일 비활성화
-      const { disabledSheets, newStyle } = disableOklchStyles()
+      // oklch 호환용 스타일 정규화
+      const captureStyleState = prepareCaptureStyles()
 
       // 상태 업데이트 반영을 위해 약간의 딜레이
       await new Promise(resolve => setTimeout(resolve, 100))
 
       try {
         printRef.current.setAttribute("data-pdf-capture-root", "true")
+
+        // 웹폰트 로딩 완료 대기 (미리보기와 PDF 폰트 불일치 방지)
+        if ("fonts" in document) {
+          try {
+            const fontFaceSet = (document as Document & { fonts: FontFaceSet }).fonts
+            await fontFaceSet.ready
+            const bodyFont = style.styles.body.fontFamily
+            if (bodyFont) {
+              const primaryFamily = bodyFont.split(",")[0]?.trim().replace(/^['"]|['"]$/g, "")
+              if (primaryFamily) {
+                await fontFaceSet.load(`16px "${primaryFamily}"`)
+              }
+            }
+          } catch {
+            // 폰트 대기 실패 시에도 PDF 생성은 계속 진행
+          }
+        }
 
         // A4 사이즈 설정 (mm)
         const a4Width = 210
@@ -727,8 +763,8 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
         alert('PDF 생성 중 오류가 발생했습니다.')
       } finally {
         printRef.current.removeAttribute("data-pdf-capture-root")
-        // oklch 스타일 복원
-        restoreOklchStyles(disabledSheets, newStyle)
+        // 캡처용 스타일 복원
+        restoreCaptureStyles(captureStyleState)
         setIsPrinting(false)
       }
     }
@@ -824,7 +860,18 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
             className="gap-1.5 h-8 text-xs"
           >
             <Printer className="h-3.5 w-3.5" />
-            {isPrinting ? "생성 중..." : "PDF 저장"}
+            {isPrinting ? "생성 중..." : "PDF"}
+          </Button>
+
+          {/* DOCX Button */}
+          <Button
+            onClick={() => exportToDocx(markdown, title || '', coverAuthor, coverFooter, style)}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 text-xs"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            DOCX
           </Button>
         </div>
         </div>

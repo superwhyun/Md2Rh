@@ -6,7 +6,9 @@ import { useState, useRef } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { Upload } from "lucide-react"
+import { Upload, FolderArchive } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { exportToZip } from "@/lib/export-utils"
 import { EditorToolbar } from "./editor-toolbar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StyleSelector } from "@/components/style-selector"
@@ -522,6 +524,17 @@ export function MarkdownEditor({
               <StyleSelector styles={styles} selectedStyleId={selectedStyleId} onStyleSelect={onStyleSelect} />
             </div>
           </div>
+
+          {/* ZIP Export Button */}
+          <Button
+            onClick={() => exportToZip(value, title, coverAuthor, coverFooter)}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 text-xs"
+          >
+            <FolderArchive className="h-3.5 w-3.5" />
+            ZIP 저장
+          </Button>
         </div>
         
         {/* Format Toolbar - Only show in main tab */}
