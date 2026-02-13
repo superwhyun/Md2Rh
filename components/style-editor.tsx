@@ -94,7 +94,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
         ...newLevels[levelIndex],
         [field]: value,
       }
-      
+
       return {
         ...prev,
         listCustomization: {
@@ -113,7 +113,7 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
         ...newLevels[levelIndex],
         [field]: value,
       }
-      
+
       return {
         ...prev,
         listCustomization: {
@@ -133,11 +133,11 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
   ]
 
   const getDefaultOLLevels = (): OLLevelStyle[] => [
-    { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
-    { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' },
-    { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem' }
+    { fontSize: '1rem', fontFamily: "'NanumSquare', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '1rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'number' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'korean' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunGothic', sans-serif", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'number_paren' },
+    { fontSize: '1rem', fontFamily: "'NanumBarunPen', cursive", fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '0rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'korean_paren' },
+    { fontSize: '1rem', fontFamily: 'inherit', fontWeight: 'normal', color: 'inherit', backgroundColor: 'transparent', padding: '0', indentation: '3.5rem', boxStyle: false, numberSpacing: '0.3em', bottomMargin: '1rem', numberingType: 'roman' }
   ]
 
   const numberingOptions = [
@@ -164,8 +164,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Label>폰트 패밀리</Label>
-              <Select 
-                value={elementStyle?.fontFamily || ""} 
+              <Select
+                value={elementStyle?.fontFamily || ""}
                 onValueChange={(value) => updateElementStyle(elementKey, "fontFamily", value)}
               >
                 <SelectTrigger>
@@ -266,8 +266,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                 </div>
                 <div>
                   <Label>좌우 정렬</Label>
-                  <Select 
-                    value={elementStyle?.textAlign || "left"} 
+                  <Select
+                    value={elementStyle?.textAlign || "left"}
                     onValueChange={(value) => updateElementStyle(elementKey, "textAlign", value)}
                   >
                     <SelectTrigger>
@@ -283,8 +283,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                 </div>
                 <div>
                   <Label>상하 정렬</Label>
-                  <Select 
-                    value={elementStyle?.verticalAlign || "middle"} 
+                  <Select
+                    value={elementStyle?.verticalAlign || "middle"}
                     onValueChange={(value) => updateElementStyle(elementKey, "verticalAlign", value)}
                   >
                     <SelectTrigger>
@@ -299,8 +299,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                 </div>
                 <div>
                   <Label>테두리 스타일</Label>
-                  <Select 
-                    value={elementStyle?.borderStyle || "solid"} 
+                  <Select
+                    value={elementStyle?.borderStyle || "solid"}
                     onValueChange={(value) => updateElementStyle(elementKey, "borderStyle", value)}
                   >
                     <SelectTrigger>
@@ -318,13 +318,13 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
               </div>
             </div>
           )}
-          
+
           {/* 제목 레벨인 경우 넘버링 설정 추가 */}
           {headingLevel && (
             <div className="border-t pt-4">
               <Label>넘버링 형식</Label>
-              <Select 
-                value={editedStyle.headingNumbering?.[headingLevel] || 'number'} 
+              <Select
+                value={editedStyle.headingNumbering?.[headingLevel] || 'number'}
                 onValueChange={(value) => updateHeadingNumbering(headingLevel, value as NumberingType)}
               >
                 <SelectTrigger>
@@ -480,8 +480,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                   </div>
                   <div>
                     <Label>폰트 패밀리</Label>
-                    <Select 
-                      value={level.fontFamily} 
+                    <Select
+                      value={level.fontFamily}
                       onValueChange={(value) => updateULLevel(index, 'fontFamily', value)}
                     >
                       <SelectTrigger>
@@ -591,8 +591,8 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                   </div>
                   <div>
                     <Label>폰트 패밀리</Label>
-                    <Select 
-                      value={level.fontFamily} 
+                    <Select
+                      value={level.fontFamily}
                       onValueChange={(value) => updateOLLevel(index, 'fontFamily', value)}
                     >
                       <SelectTrigger>
@@ -636,6 +636,24 @@ export function StyleEditor({ style, onSave, onCancel, onTempUpdate, onRestore }
                       onChange={(e) => updateOLLevel(index, 'padding', e.target.value)}
                       placeholder="0"
                     />
+                  </div>
+                  <div>
+                    <Label>넘버링 형식</Label>
+                    <Select
+                      value={level.numberingType || 'number'}
+                      onValueChange={(value) => updateOLLevel(index, 'numberingType', value as NumberingType)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {numberingOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox

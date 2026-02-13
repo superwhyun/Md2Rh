@@ -4,8 +4,10 @@ import React from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
+import { getNumberingString } from "@/lib/numbering"
 import {
   type DocumentStyle,
+  type NumberingType,
   type ULLevelStyle,
   type OLLevelStyle,
   getDefaultULLevels,
@@ -242,8 +244,8 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
 
     if (isOrdered) {
       const level = olLevels[clampIndex(depth, olLevels.length)]
-      const numberText = `${olIndex ?? 1}.`
-      const markerCh = Math.max(2, String(olIndex ?? 1).length + 1)
+      const numberText = getNumberingString(level.numberingType || 'number', (olIndex ?? 1) - 1)
+      const markerCh = Math.max(2, numberText.length)
       return (
         <li
           style={{
@@ -389,10 +391,10 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
             ...(isPrinting
               ? {}
               : {
-                  transform: "scale(0.75)",
-                  transformOrigin: "top left",
-                  position: "relative",
-                }),
+                transform: "scale(0.75)",
+                transformOrigin: "top left",
+                position: "relative",
+              }),
           }}
         >
           <div
