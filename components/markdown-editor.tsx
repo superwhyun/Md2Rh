@@ -21,6 +21,8 @@ interface MarkdownEditorProps {
   canRedo?: boolean
   title: string
   onTitleChange: (title: string) => void
+  coverAuthor: string
+  onCoverAuthorChange: (value: string) => void
   coverFooter: string
   onCoverFooterChange: (value: string) => void
   styles: DocumentStyle[]
@@ -37,6 +39,8 @@ export function MarkdownEditor({
   canRedo = false,
   title, 
   onTitleChange, 
+  coverAuthor,
+  onCoverAuthorChange,
   coverFooter, 
   onCoverFooterChange, 
   styles, 
@@ -358,11 +362,42 @@ export function MarkdownEditor({
     <Tabs defaultValue="main" className="h-full flex flex-col">
       {/* Editor Header */}
       <div className="border-b bg-muted/30 shrink-0">
+        {/* Editor Label Banner */}
+        <div 
+          className="border-b px-4 py-2 flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #60a5fa 50%, #3b82f6 75%, #1e3a8a 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        >
+          <span 
+            className="font-black uppercase tracking-[0.2em] text-white"
+            style={{ 
+              fontFamily: 'Impact, "Arial Black", "Helvetica Neue", sans-serif',
+              fontSize: '24px',
+              lineHeight: '1',
+              textShadow: '0 2px 4px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.3)'
+            }}
+          >
+            편집
+          </span>
+        </div>
+        
         {/* Toolbar Row */}
         <div className="px-3 py-2 border-b flex items-center justify-between">
-          <TabsList className="h-7 bg-background">
-            <TabsTrigger value="main" className="text-xs px-3 py-1 h-6">본문</TabsTrigger>
-            <TabsTrigger value="cover" className="text-xs px-3 py-1 h-6">표지</TabsTrigger>
+          <TabsList className="h-9 p-1 bg-muted/50">
+            <TabsTrigger 
+              value="cover" 
+              className="relative text-xs px-6 py-2 h-7 font-bold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border/50 rounded-md transition-all"
+            >
+              표지
+            </TabsTrigger>
+            <TabsTrigger 
+              value="main" 
+              className="relative text-xs px-6 py-2 h-7 font-bold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border/50 rounded-md transition-all"
+            >
+              본문
+            </TabsTrigger>
           </TabsList>
           
           <div className="flex items-center gap-2">
@@ -398,23 +433,39 @@ export function MarkdownEditor({
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
                 placeholder="제목을 입력하세요"
-                className="h-9"
+                className="h-9 bg-background"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="coverAuthor" className="text-xs font-medium text-foreground">
+                작성자 정보
+              </label>
+              <p className="text-[10px] text-muted-foreground">작성자, 소속, 이메일 등을 기재</p>
+              <Textarea
+                id="coverAuthor"
+                value={coverAuthor}
+                onChange={(e) => onCoverAuthorChange(e.target.value)}
+                placeholder="작성자: 홍길동
+소속: 기획팀
+이메일: example@company.com"
+                className="min-h-[100px] font-mono text-xs resize-none whitespace-pre-wrap bg-background"
+                style={{ whiteSpace: 'pre-wrap' }}
               />
             </div>
 
             <div className="space-y-1.5">
               <label htmlFor="coverFooter" className="text-xs font-medium text-foreground">
-                표지 하단 정보
+                문서 개요
               </label>
-              <p className="text-[10px] text-muted-foreground">작성자, 작성일, 소속 등을 마크다운으로 입력</p>
+              <p className="text-[10px] text-muted-foreground">문서에 대한 개요(Abstract) 기재</p>
               <Textarea
                 id="coverFooter"
                 value={coverFooter}
                 onChange={(e) => onCoverFooterChange(e.target.value)}
-                placeholder="**작성자**: 홍길동  
-**부서**: 기획팀  
-**날짜**: 2024.01.01"
-                className="min-h-[160px] font-mono text-xs resize-none"
+                placeholder="본 문서는..."
+                className="min-h-[120px] font-mono text-xs resize-none whitespace-pre-wrap bg-background"
+                style={{ whiteSpace: 'pre-wrap' }}
               />
             </div>
           </div>
@@ -435,7 +486,7 @@ export function MarkdownEditor({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="# 제목을 입력하세요&#10;&#10;여기에 마크다운을 작성하세요..."
-            className="h-full resize-none font-mono text-sm flex-1 leading-relaxed"
+            className="h-full resize-none font-mono text-sm flex-1 leading-relaxed bg-[#fafafa] dark:bg-[#1a1a1a] border-muted-foreground/20 focus:bg-background transition-colors"
             spellCheck={false}
           />
 

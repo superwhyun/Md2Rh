@@ -4,9 +4,11 @@ import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata: Metadata = {
-  title: 'Markdown2StyledHTML',
-  description: 'Markdown to Styled HTML Document Converter',
-  generator: 'v0.dev',
+  title: 'MD2PDF - Markdown To Styled PDF',
+  description: 'Convert Markdown to styled PDF documents',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

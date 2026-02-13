@@ -34,7 +34,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
           <section>
             <h3 className="font-medium text-foreground mb-2">스타일 관리</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-1">
-              <li><span className="text-foreground">서식 관리자</span>: 새 스타일 생성 및 수정</li>
+              <li><span className="text-foreground">스타일 관리자</span>: 새 스타일 생성 및 수정</li>
               <li><span className="text-foreground">기본 제공 스타일</span>: 모던, 깔끔한, 정부 보고서 등</li>
               <li><span className="text-foreground">실시간 편집</span>: 수정 즉시 미리보기 반영</li>
             </ul>

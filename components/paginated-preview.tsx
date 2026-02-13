@@ -221,7 +221,7 @@ export function PaginatedPreview({ content, style, isPrinting = false }: Paginat
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '40px' }}>
       <div style={isPrinting ? { width: '210mm', overflow: 'visible' } : { width: '157.5mm', overflow: 'hidden' }}>
-        <div className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
+        <div className="bg-white" style={{ boxShadow: isPrinting ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' }} style={isPrinting ? {
           width: '210mm',
           minHeight: '297mm',
           padding: '0',

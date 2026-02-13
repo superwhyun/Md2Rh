@@ -241,7 +241,7 @@ export function StyleManager({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>문서 서식 관리자</DialogTitle>
+          <DialogTitle>문서 스타일 관리자</DialogTitle>
         </DialogHeader>
 
         {!editingStyle ? (

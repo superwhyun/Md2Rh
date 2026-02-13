@@ -17,11 +17,12 @@ interface MarkdownPreviewProps {
   markdown: string
   style?: DocumentStyle
   title?: string
+  coverAuthor?: string
   coverFooter?: string
   onMarkdownChange?: (markdown: string) => void
 }
 
-export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdownChange }: MarkdownPreviewProps) {
+export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFooter, onMarkdownChange }: MarkdownPreviewProps) {
   const [highlightColor, setHighlightColor] = useState("#ffff00")
   const [isHighlightMode, setIsHighlightMode] = useState(false)
 
@@ -110,7 +111,7 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isPrinting ? '0' : '20px' }}>
         <div style={isPrinting ? { width: '210mm', height: '297mm' } : { width: '157.5mm', height: '222.75mm', position: 'relative' }}>
-          <div data-cover-page="true" className={isPrinting ? "bg-white" : "bg-white shadow-lg"} style={isPrinting ? {
+          <div data-cover-page="true" className={isPrinting ? "bg-white" : "bg-white"} style={{ boxShadow: isPrinting ? 'none' : '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' }} style={isPrinting ? {
             width: '210mm',
             height: '297mm',
             padding: '0',
@@ -250,39 +251,45 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
                 </div>
               </div>
 
-              {/* 하단 푸터 영역 */}
+              {/* 작성자 정보 영역 */}
+              {coverAuthor && (
+                <div style={{
+                  width: '100%',
+                  paddingTop: '20px',
+                  borderTop: '1px solid #e9ecef',
+                  flexShrink: 0,
+                  marginTop: 'auto'
+                }}>
+                  <div style={{
+                    ...style?.styles.p,
+                    fontSize: '1.44rem',
+                    color: '#555',
+                    textAlign: 'right',
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: '1.6'
+                  }}>
+                    {coverAuthor}
+                  </div>
+                </div>
+              )}
+
+              {/* 문서 개요 영역 */}
               {coverFooter && (
                 <div style={{
                   width: '100%',
-                  paddingTop: '30px',
-                  borderTop: '1px solid #e9ecef',
+                  paddingTop: coverAuthor ? '20px' : '30px',
+                  borderTop: coverAuthor ? '1px solid #e9ecef' : 'none',
                   flexShrink: 0
                 }}>
                   <div style={{
                     ...style?.styles.p,
                     fontSize: '0.95rem',
                     color: '#555',
-                    textAlign: 'left'
+                    textAlign: 'left',
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: '1.6'
                   }}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ node, ...props }) => <p style={{ marginBottom: '0.5em', ...style?.styles.p }} {...props} />,
-                        strong: ({ node, ...props }) => <strong style={{ fontWeight: 'bold' }} {...props} />,
-                        em: ({ node, ...props }) => <em style={{ fontStyle: 'italic' }} {...props} />,
-                        ul: ({ node, ...props }) => <ul style={{ listStyleType: 'disc', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
-                        ol: ({ node, ...props }) => <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5em', marginBottom: '0.5em' }} {...props} />,
-                        li: ({ node, ...props }) => <li style={{ marginBottom: '0.2em' }} {...props} />,
-                        table: ({ node, ...props }) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '1em', fontSize: '0.9em', ...style?.styles.table }} {...props} />,
-                        thead: ({ node, ...props }) => <thead style={{ backgroundColor: '#f8f9fa' }} {...props} />,
-                        tbody: ({ node, ...props }) => <tbody {...props} />,
-                        tr: ({ node, ...props }) => <tr style={{ borderBottom: '1px solid #ddd' }} {...props} />,
-                        th: ({ node, ...props }) => <th style={{ border: '1px solid #ddd', padding: '8px', fontWeight: 'bold', textAlign: 'left', ...style?.styles.th }} {...props} />,
-                        td: ({ node, ...props }) => <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', ...style?.styles.td }} {...props} />
-                      }}
-                    >
-                      {coverFooter}
-                    </ReactMarkdown>
+                    {coverFooter}
                   </div>
                 </div>
               )}
@@ -750,32 +757,60 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
   const finalMarkdown = parseListDepth(numberedMarkdown)
 
   return (
-    <div className="h-full flex flex-col bg-muted/20">
+    <div className="h-full flex flex-col bg-slate-200 dark:bg-slate-900">
       {/* Preview Header */}
-      <div className="h-14 border-b bg-background flex items-center justify-between px-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-foreground">{style?.name || '기본 서식'}</span>
-          <span className="text-xs text-muted-foreground">미리보기</span>
+      <div className="border-b bg-background flex flex-col shrink-0 shadow-sm z-10">
+        {/* Preview Label Banner */}
+        <div 
+          className="border-b px-4 py-2 flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, #064e3b 0%, #10b981 25%, #34d399 50%, #10b981 75%, #064e3b 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        >
+          <span 
+            className="font-black uppercase tracking-[0.2em] text-white"
+            style={{ 
+              fontFamily: 'Impact, "Arial Black", "Helvetica Neue", sans-serif',
+              fontSize: '24px',
+              lineHeight: '1',
+              textShadow: '0 2px 4px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.3)'
+            }}
+          >
+            미리보기
+          </span>
         </div>
+        
+        <div className="h-10 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">{style?.name || '기본 서식'}</span>
+          </div>
 
         <div className="flex items-center gap-2">
           {/* Highlight Controls */}
-          <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
-            <input
-              type="color"
-              value={highlightColor}
-              onChange={(e) => setHighlightColor(e.target.value)}
-              className="w-5 h-5 p-0 border-0 rounded cursor-pointer overflow-hidden"
-              title="하이라이트 색상"
-            />
+          <div className="flex items-center gap-1.5 bg-muted rounded-lg p-1.5 border">
+            <div className="relative">
+              <input
+                type="color"
+                value={highlightColor}
+                onChange={(e) => setHighlightColor(e.target.value)}
+                className="w-6 h-6 p-0 border rounded cursor-pointer overflow-hidden shadow-sm"
+                style={{ background: highlightColor }}
+                title="하이라이트 색상"
+              />
+              <div 
+                className="absolute inset-0 rounded border pointer-events-none"
+                style={{ borderColor: highlightColor === '#ffffff' ? '#000' : 'transparent' }}
+              />
+            </div>
             <Button
               onClick={() => setIsHighlightMode(!isHighlightMode)}
-              variant={isHighlightMode ? "secondary" : "ghost"}
+              variant={isHighlightMode ? "default" : "ghost"}
               size="sm"
-              className={`h-6 w-6 p-0 ${isHighlightMode ? "ring-1 ring-primary" : ""}`}
+              className={`h-7 w-7 p-0 ${isHighlightMode ? "" : "hover:bg-muted-foreground/10"}`}
               title={isHighlightMode ? "하이라이트 모드 끄기" : "하이라이트 모드 켜기"}
             >
-              <Highlighter className="h-3 w-3" style={{ color: highlightColor }} />
+              <Highlighter className="h-4 w-4" style={{ color: isHighlightMode ? 'currentColor' : highlightColor }} />
             </Button>
           </div>
 
@@ -792,14 +827,21 @@ export function MarkdownPreview({ markdown, style, title, coverFooter, onMarkdow
             {isPrinting ? "생성 중..." : "PDF 저장"}
           </Button>
         </div>
+        </div>
       </div>
 
-      {/* Preview Content */}
+      {/* Preview Content - Desk-like background */}
       <div
-        className="flex-1 overflow-auto w-full py-6"
+        className="flex-1 overflow-auto w-full py-8 px-4"
         onMouseUp={handleMouseUp}
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 50%, rgba(0,0,0,0.02) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02) 0%, transparent 50%)
+          `
+        }}
       >
-        <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <div ref={printRef} className="flex flex-col items-center gap-8 pb-8">
           {renderTitlePage()}
           <PaginatedPreview content={finalMarkdown} style={style} isPrinting={isPrinting} />
         </div>

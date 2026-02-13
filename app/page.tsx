@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Github, HelpCircle, FileText, LayoutTemplate } from "lucide-react"
 import { type DocumentStyle, getDefaultStyles } from "@/lib/default-styles"
 import { ModeToggle } from "@/components/mode-toggle"
+import { ThemeSelector } from "@/components/theme-selector"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -78,6 +79,7 @@ export default function Home() {
 - Oxford Internet Institute 연구: “Echo Chambers and Political Polarization on YouTube”  
 `)
   const [coverFooter, setCoverFooter] = useState("")
+  const [coverAuthor, setCoverAuthor] = useState("")
 
   // Undo/Redo state management
   const [history, setHistory] = useState<HistoryState>({
@@ -187,13 +189,11 @@ export default function Home() {
       <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 shrink-0 z-50">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground shadow-sm">
-            <FileText className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="font-semibold text-sm leading-tight">Md2Rh</h1>
-            <span className="text-[10px] text-muted-foreground">Markdown to Report</span>
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="MD2PDF" 
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* Actions */}
@@ -205,10 +205,12 @@ export default function Home() {
             className="gap-2 h-8 text-xs"
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
-            서식
+            스타일 관리자
           </Button>
 
           <div className="w-px h-4 bg-border mx-2" />
+
+          <ThemeSelector />
 
           <ModeToggle />
 
@@ -240,7 +242,7 @@ export default function Home() {
                 >
                   <div className="h-full flex flex-col border-r">
                     <div className="h-10 px-3 border-b flex items-center justify-between bg-muted/30">
-                      <span className="text-xs font-medium text-muted-foreground">서식 관리자</span>
+                      <span className="text-xs font-medium text-muted-foreground">스타일 관리자</span>
                       <Button variant="ghost" size="icon" onClick={() => {
                         setIsStyleManagerOpen(false)
                         setTempStyle(null)
@@ -280,6 +282,8 @@ export default function Home() {
                   canRedo={history.future.length > 0}
                   title={title}
                   onTitleChange={setTitle}
+                  coverAuthor={coverAuthor}
+                  onCoverAuthorChange={setCoverAuthor}
                   coverFooter={coverFooter}
                   onCoverFooterChange={setCoverFooter}
                   styles={styles}
@@ -292,13 +296,14 @@ export default function Home() {
         </div>
 
         {/* Fixed Preview Section - Width fixed to ~700px to fit scaled A4 */}
-        <div className="flex-none w-[700px] border-l bg-secondary/10 flex flex-col h-full overflow-hidden">
+        <div className="flex-none w-[700px] border-l-2 border-l-border bg-slate-200 dark:bg-slate-900 flex flex-col h-full overflow-hidden shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)]">
           <div className="flex-1 overflow-hidden relative">
             <MarkdownPreview
               markdown={markdown}
               onMarkdownChange={setMarkdown}
               style={selectedStyle}
               title={title}
+              coverAuthor={coverAuthor}
               coverFooter={coverFooter}
             />
           </div>
