@@ -21,7 +21,14 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const hostname = new URL(url).hostname
+      return NextResponse.json({
+        title: url,
+        description: '',
+        image: '',
+        siteName: hostname,
+        url
+      })
     }
 
     const html = await response.text()

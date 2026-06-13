@@ -623,6 +623,34 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
           element.style.transform = 'none'
           element.style.width = '210mm'
 
+          // 외부 이미지를 data URL로 변환 (html-to-image가 내부 fetch를 건너뜀)
+          const imgs = Array.from(element.querySelectorAll('img')) as HTMLImageElement[]
+          const originalSrcs = imgs.map(img => img.src)
+          await Promise.allSettled(
+            imgs.map(async (img) => {
+              const src = img.src
+              if (src.startsWith('data:')) return  // 이미 data URL이면 패스
+              try {
+                // blob: URL은 클라이언트에서 직접 fetch, 외부 URL은 프록시 경유
+                const fetchUrl = src.startsWith('blob:')
+                  ? src
+                  : `/api/proxy-image?url=${encodeURIComponent(src)}`
+                const res = await fetch(fetchUrl)
+                if (!res.ok) throw new Error('fetch failed')
+                const blob = await res.blob()
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader()
+                  reader.onloadend = () => resolve(reader.result as string)
+                  reader.onerror = reject
+                  reader.readAsDataURL(blob)
+                })
+                img.src = dataUrl
+              } catch {
+                img.style.display = 'none'
+              }
+            })
+          )
+
           // html-to-image의 toCanvas로 요소를 캔버스로 변환 (SVG 기반 정교한 캡처)
           const canvas = await toCanvas(element, {
             pixelRatio: 2,
@@ -634,6 +662,12 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
               minHeight: originalMinHeight,
               height: originalHeight
             }
+          })
+
+          // 이미지 src 및 스타일 복원
+          imgs.forEach((img, idx) => {
+            img.src = originalSrcs[idx]
+            img.style.display = ''
           })
 
           // 스타일 복원

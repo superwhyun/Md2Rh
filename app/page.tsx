@@ -116,11 +116,6 @@ console.log(status)
 - 이미지 파일을 편집창 위로 드래그해서 놓으면
 - 현재 커서 위치에 Markdown 이미지 문법이 자동 삽입됩니다.
 
-자동 삽입 예시:
-\`\`\`markdown
-![diagram.png](blob:...)
-\`\`\`
-
 ### 클립보드 복사 후 붙여넣기
 
 - 캡처 도구나 이미지 뷰어에서 복사(Ctrl/Cmd+C)
@@ -185,12 +180,12 @@ console.log(status)
 1. 한 줄에 URL만 작성
 2. 한 줄에 \`[텍스트](URL)\`만 작성
 
-예시:
+예시 (아래처럼 한 줄에 단독으로 작성하면 카드로 렌더링):
 
-\`\`\`markdown
-https://example.com/docs/overview
+\`\`\`
+https://www.google.com
 
-[서비스 운영 가이드](https://example.com/runbook)
+[서비스 운영 가이드](https://www.wikipedia.org)
 \`\`\`
 
 ## 스타일 기능 상세 가이드
