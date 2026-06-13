@@ -25,61 +25,245 @@ interface HistoryState {
 }
 
 export default function Home() {
-  const [title, setTitle] = useState("")
-  const [markdown, setMarkdown] = useState(`| 문서번호 | YT-COG-BIAS-REP-2025-08-22 | 작성자 | U2 PIA |
-| --- | --- | --- | --- |
-| 버전 | 1.0 | 작성일 | 2025-08-22 |
+  const [title, setTitle] = useState("Md2Rh 서비스 사용 매뉴얼")
+  const [markdown, setMarkdown] = useState(`# Md2Rh 서비스 사용 매뉴얼
 
-### Abstract
+이 문서는 Md2Rh 사이트의 실제 사용 흐름을 기준으로 작성된 상세 가이드입니다.  
+처음 사용하는 사용자도 아래 순서대로 따라 하면 문서 작성부터 PDF/DOCX/ZIP 내보내기까지 완료할 수 있습니다.
 
-- 유튜브 알고리즘이 확증편향을 강화하여 국가별 사회적 갈등과 정치적 양극화를 심화시키고 있다는 의혹 검토
-- 알고리즘 설계의 불투명성과 추천 모델의 구조적 문제로 인한 정보 거품(Filter Bubble) 현상 분석
-- 주요 국가별 사례 연구(미국, 인도, 독일, 한국)를 통한 의도적 갈등 조장 가능성 평가
+## 서비스 개요
 
-### Summary
+Md2Rh는 Markdown 문서를 보고서 형태로 작성하고, 우측 A4 미리보기에서 결과를 확인하며, 최종 결과물을 내보내는 도구입니다.
 
-- 유튜브는 전 세계에서 가장 큰 동영상 플랫폼으로, 추천 알고리즘이 개인화된 콘텐츠 소비를 극대화한다는 명목하에 확증편향을 체계적으로 강화하고 있음. 특히 정치적·사회적 쟁점과 관련된 영상은 사용자의 기존 신념과 일치하는 방향으로 더 강력히 추천됨.
-- 미국의 경우, 대선 기간 동안 극단적 정치 성향의 채널들이 알고리즘 추천을 통해 확산되었으며 이는 사회적 양극화 심화로 이어졌음. 인도에서는 종교적·민족적 갈등을 자극하는 영상들이 추천 구조를 통해 확산되어 지역 사회 충돌을 증폭시켰음. 독일과 한국에서는 난민·이민자 문제, 젠더 갈등 등 사회적 논란이 알고리즘을 통해 증폭되는 현상이 보고됨.
-- 알고리즘의 설계 자체가 사용자의 시청 시간을 극대화하도록 맞춰져 있기 때문에, 자극적이고 갈등 유발적인 콘텐츠가 체계적으로 우대되는 구조가 존재. 이는 단순한 기술적 산물이 아니라 의도적 전략일 가능성이 제기됨.
+- 좌측: 편집 영역(표지/본문)
+- 우측: A4 실시간 미리보기
+- 상단: 스타일 관리자, 테마, 다크모드, 도움말, GitHub 링크
 
-### Technical Details
+## 기본 작업 순서
 
-- 알고리즘 작동 방식  
-    - 유튜브 추천 시스템은 시청 이력, 검색 기록, 유사 사용자 행동 데이터를 기반으로 강화 학습 모델을 적용.  
-    - 모델은 사용자의 관심을 오래 붙잡을 수 있는 콘텐츠를 우선순위에 두며, 결과적으로 자극적이고 감정적 반응을 불러일으키는 영상이 상위에 노출됨.  
+1. 표지 탭에서 제목/작성자/문서 개요를 입력합니다.
+2. 본문 탭에서 Markdown 내용을 작성합니다.
+3. 필요하면 스타일을 변경하거나 스타일 관리자로 상세 편집합니다.
+4. 우측 미리보기에서 페이지 구성을 확인하고 하이라이트로 검토합니다.
+5. PDF, DOCX, ZIP 중 필요한 형식으로 내보냅니다.
 
-- 확증편향 강화 메커니즘  
-    - 사용자의 정치적 성향, 종교적 신념, 사회적 태도에 맞는 콘텐츠가 반복적으로 추천되어 ‘정보 편향의 자기 강화 루프’가 형성됨.  
-    - 이는 필터 버블(Filter Bubble)과 에코 챔버(Echo Chamber) 효과를 심화시킴.  
+## 표지 탭 상세 가이드
 
-- 국가별 갈등 조장 의혹  
-    - 미국: QAnon, 극우 채널 영상이 대규모 확산  
-    - 인도: 종교 갈등 관련 혐오 콘텐츠가 지역 폭력 사태와 연결  
-    - 독일: 난민 반대 콘텐츠 추천 증가 → 극우 세력 성장과 결합  
-    - 한국: 젠더 갈등 및 정치 성향 양극화를 유발하는 영상이 상위 노출  
+표지 탭에서는 문서 첫 페이지 정보를 설정합니다.
 
-### Additional Information
+- 문서 제목: 표지 중앙의 큰 제목으로 출력
+- 작성자 정보: 여러 줄 입력 가능(작성자, 소속, 이메일 등)
+- 문서 개요: Abstract처럼 짧은 소개 문구 입력
 
-- 연구 기관과 시민단체는 유튜브의 알고리즘이 단순한 정보 전달을 넘어 사회 갈등을 증폭시키는 ‘디지털 갈등 증폭기’ 역할을 한다고 비판함.  
-- 유럽연합(EU)과 미국은 플랫폼의 알고리즘 투명성 의무화를 검토 중이며, 인도와 한국에서는 규제 강화 요구가 증가하고 있음.  
-- 그러나 유튜브는 알고리즘의 핵심 구조와 데이터셋을 영업 비밀로 간주하여 공개하지 않고 있으며, 이는 의도적 갈등 조장의 증거 검증을 어렵게 만드는 요인임.  
+입력 예시:
 
-### Recommended Action Items
+\`\`\`
+문서 제목: 2026년 1분기 서비스 운영 보고서
 
-- 각국 정부와 국제기구 차원의 알고리즘 투명성 규제 강화 추진  
-- 알고리즘 기반 추천 구조의 사회적 영향에 대한 장기적 연구 지원 확대  
-- 시민사회와 학계 중심의 독립적 감시 체계 구축 필요  
-- 플랫폼 기업의 사회적 책임 강화 및 고의적 갈등 조장 여부에 대한 국제 조사 필요  
+작성자 정보:
+작성자: 홍길동
+소속: 플랫폼운영팀
+이메일: ops@example.com
 
-### References
+문서 개요:
+본 문서는 2026년 1분기 운영 지표, 장애 통계, 개선 과제를 정리한 보고서입니다.
+\`\`\`
 
-- EU Digital Services Act (DSA) 관련 문서  
-- Amnesty International 보고서: “YouTube and the Cycle of Extremism”  
-- MIT Technology Review: “The Algorithm that Radicalized the World”  
-- Oxford Internet Institute 연구: “Echo Chambers and Political Polarization on YouTube”  
+## 본문 탭 상세 가이드
+
+본문 탭에서는 Markdown으로 실제 콘텐츠를 작성합니다.
+
+- 툴바로 빠른 문법 삽입 가능(제목, 목록, 표, 코드, 링크, 이미지)
+- 우측 미리보기에 즉시 반영
+- Undo/Redo 이력 최대 50단계 유지
+
+### 자주 쓰는 단축키
+
+- 실행 취소: Ctrl(Cmd)+Z
+- 다시 실행: Ctrl(Cmd)+Y 또는 Ctrl(Cmd)+Shift+Z
+- 들여쓰기: Tab
+- 내어쓰기: Shift+Tab
+
+### 툴바 없이 직접 작성하는 기본 문법
+
+\`\`\`markdown
+# 제목 1
+## 제목 2
+### 제목 3
+
+**굵게** / *기울임*
+
+- 순서 없는 목록
+1. 순서 있는 목록
+
+> 인용문
+\`\`\`
+
+코드 블록 예시:
+\`\`\`
+~~~ts
+const status = "ok"
+console.log(status)
+~~~
+\`\`\`
+
+## 이미지 삽입 상세 가이드
+
+이미지는 4가지 방식으로 넣을 수 있습니다.
+
+### 로컬 파일 드래그 앤 드롭
+
+- 이미지 파일을 편집창 위로 드래그해서 놓으면
+- 현재 커서 위치에 Markdown 이미지 문법이 자동 삽입됩니다.
+
+자동 삽입 예시:
+\`\`\`markdown
+![diagram.png](blob:...)
+\`\`\`
+
+### 클립보드 복사 후 붙여넣기
+
+- 캡처 도구나 이미지 뷰어에서 복사(Ctrl/Cmd+C)
+- 본문 에디터에서 붙여넣기(Ctrl/Cmd+V)
+- 커서 위치에 이미지가 자동 삽입됩니다.
+
+### 외부 이미지 URL 직접 입력
+
+아래처럼 Markdown 이미지 문법으로 직접 넣을 수 있습니다.
+
+\`\`\`markdown
+![시스템 구성도](https://example.com/assets/architecture.png)
+\`\`\`
+
+### 브라우저에서 이미지 URL/이미지 요소 드롭
+
+- 브라우저 탭의 이미지나 이미지 URL을 에디터로 드롭하면
+- URL 또는 변환된 blob 주소로 자동 삽입됩니다.
+
+실무 팁:
+- 최종 공유용 문서는 외부 URL이 끊길 수 있으므로 가능하면 로컬 이미지/붙여넣기 기반으로 작업 후 ZIP 보관을 권장합니다.
+
+## 표 작성 및 열(셀) 크기 조정 가이드
+
+기본 표 문법:
+
+\`\`\`markdown
+| 항목 | 내용 |
+| --- | --- |
+| 상태 | 진행중 |
+| 담당 | 플랫폼팀 |
+\`\`\`
+
+### 열 너비 지정 방법(중요)
+
+이 서비스는 **헤더 셀 텍스트에 너비 토큰을 넣는 방식**으로 열 너비를 조정합니다.
+
+- 형식: \`{{숫자%}}\`
+- 위치: 헤더 셀 안 텍스트에 포함
+- 예시:
+
+\`\`\`markdown
+| 항목 {{25%}} | 상세 내용 {{75%}} |
+| --- | --- |
+| 배포 상태 | 정상 |
+| 이슈 | 없음 |
+\`\`\`
+
+동작 방식:
+- 헤더의 \`{{25%}}\`, \`{{75%}}\`가 각 열 폭으로 적용됩니다.
+- 본문 셀(td)에도 같은 열 폭이 자동 적용됩니다.
+- 퍼센트가 없거나 잘못된 값이면 자동 너비로 렌더링됩니다.
+
+주의:
+- 열 폭은 **열 단위**로 적용됩니다. 개별 행의 특정 셀만 따로 너비를 바꾸는 방식은 지원하지 않습니다.
+- 일반적으로 전체 열 비율 합을 100% 안팎으로 맞추는 것을 권장합니다.
+
+## 링크 카드 기능
+
+다음 형태는 일반 텍스트 링크가 아니라 카드 형태로 렌더링됩니다.
+
+1. 한 줄에 URL만 작성
+2. 한 줄에 \`[텍스트](URL)\`만 작성
+
+예시:
+
+\`\`\`markdown
+https://example.com/docs/overview
+
+[서비스 운영 가이드](https://example.com/runbook)
+\`\`\`
+
+## 스타일 기능 상세 가이드
+
+### 스타일 선택
+
+- 본문 상단 스타일 드롭다운에서 즉시 전환
+- 전환 결과는 우측 미리보기에 즉시 반영
+
+### 스타일 관리자에서 가능한 작업
+
+- 새 스타일 생성
+- 기존 스타일 선택
+- 스타일 편집
+- 스타일 복제
+- JSON 다운로드(백업/공유)
+- JSON 가져오기(드래그 앤 드롭)
+- 스타일 삭제(최소 1개 유지)
+
+### 스타일 편집 항목
+
+- 제목(H1~H6): 폰트, 크기, 굵기, 색상, 여백, 번호 형식
+- 텍스트: 본문/인용문/강조/기울임/링크
+- UL 목록: 레벨별 마커, 간격, 들여쓰기, 폰트
+- OL 목록: 레벨별 번호 형식, 간격, 들여쓰기, 폰트
+- 표: table/th/td 스타일
+- 코드: 인라인 코드/코드 블록 스타일
+
+## 미리보기 및 검토 기능
+
+- A4 페이지 기준으로 결과 확인
+- 하이라이트 색상 선택 가능
+- 하이라이트 모드 ON 후 텍스트를 드래그하면 강조 표시 삽입
+
+검토 팁:
+- 출력 전 페이지 나눔 위치를 꼭 확인하세요.
+- 표가 길면 열 너비 토큰을 먼저 조정한 뒤 스타일을 미세 조정하세요.
+
+## 내보내기 기능 차이
+
+- PDF: 최종 배포/인쇄용
+- DOCX: 워드 후편집용
+- ZIP: Markdown 원문 + 이미지 리소스 보관/이관용
+
+## 자동 저장 및 환경 설정
+
+- 스타일 목록: 브라우저 localStorage에 자동 저장
+- 앱 테마(색상): 자동 저장
+- 라이트/다크/시스템 모드 전환 지원
+
+## 문제 해결
+
+### 이미지가 안 보일 때
+
+- 외부 URL 이미지라면 접근 권한/차단(CORS) 여부를 확인하세요.
+- 가능한 경우 로컬 파일 드롭 또는 클립보드 붙여넣기로 재삽입하세요.
+
+### 표 너비가 기대와 다를 때
+
+- 헤더 셀에 \`{{30%}}\` 형식이 정확한지 확인하세요.
+- \`{{30}}\`, \`{30%}\` 같은 형식은 인식되지 않습니다.
+
+### 번호가 중복될 때
+
+- 제목 텍스트에 수동 번호(\`1.\`, \`2-1\` 등)를 넣지 마세요.
+- 제목 번호는 스타일의 자동 넘버링 기능으로 관리하세요.
 `)
-  const [coverFooter, setCoverFooter] = useState("")
-  const [coverAuthor, setCoverAuthor] = useState("")
+  const [coverFooter, setCoverFooter] = useState(
+    "이 문서는 Md2Rh 서비스에서 제공하는 핵심 기능과 활용 방법을 정리한 사용자 안내서입니다.\n문서 작성, 스타일 편집, 미리보기 검토, 내보내기(PDF/DOCX/ZIP)까지 전체 흐름을 빠르게 익힐 수 있습니다."
+  )
+  const [coverAuthor, setCoverAuthor] = useState(
+    "작성자: Md2Rh 운영팀\n소속: Product & Documentation\n이메일: support@md2rh.local"
+  )
 
   // Undo/Redo state management
   const [history, setHistory] = useState<HistoryState>({
@@ -136,6 +320,35 @@ export default function Home() {
       setMarkdown(history.present)
     }
   }, [history.present])
+
+  // 전역 단축키 리스너 추가 (미리보기 포커스 시에도 실행 취소 지원)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement
+      const isEditing = activeElement && (
+        activeElement.tagName === "INPUT" ||
+        activeElement.tagName === "TEXTAREA" ||
+        activeElement.getAttribute("contenteditable") === "true"
+      )
+      
+      // 입력창이나 에디터 포커스 상태일 때는 전역 핸들러에서 가로채지 않음
+      if (isEditing) return
+      
+      // Undo: Ctrl+Z / Cmd+Z
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault()
+        undo()
+      }
+      // Redo: Ctrl+Y or Ctrl+Shift+Z / Cmd+Shift+Z
+      else if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault()
+        redo()
+      }
+    }
+    
+    window.addEventListener("keydown", handleGlobalKeyDown)
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown)
+  }, [undo, redo])
 
   const [styles, setStyles] = useState<DocumentStyle[]>([])
   const [selectedStyleId, setSelectedStyleId] = useState<string>("")
@@ -300,7 +513,7 @@ export default function Home() {
           <div className="flex-1 overflow-hidden relative">
             <MarkdownPreview
               markdown={markdown}
-              onMarkdownChange={setMarkdown}
+              onMarkdownChange={updateMarkdown}
               style={selectedStyle}
               title={title}
               coverAuthor={coverAuthor}

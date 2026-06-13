@@ -100,6 +100,34 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
     }
   }
 
+  const handleHighlightClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isHighlightMode || !onMarkdownChange) return
+
+    const target = e.target as HTMLElement
+    const highlightSpan = target.closest('[data-highlight="true"]') as HTMLElement
+    if (!highlightSpan) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const text = highlightSpan.textContent || ""
+    if (!text) return
+
+    // 정규표현식 이스케이프 및 HTML 특수문자 대응
+    const escapedText = text
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+
+    const regex = new RegExp(`<span data-highlight="true"[^>]*>${escapedText}</span>`, 'g')
+
+    if (regex.test(markdown)) {
+      onMarkdownChange(markdown.replace(regex, text))
+      window.getSelection()?.removeAllRanges()
+    }
+  }
+
   const renderTitlePage = () => {
     if (!title?.trim()) return null
 
@@ -881,6 +909,7 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
       <div
         className="flex-1 overflow-auto w-full py-8 px-4"
         onMouseUp={handleMouseUp}
+        onClick={handleHighlightClick}
         style={{
           backgroundImage: `
             radial-gradient(circle at 20% 50%, rgba(0,0,0,0.02) 0%, transparent 50%),
