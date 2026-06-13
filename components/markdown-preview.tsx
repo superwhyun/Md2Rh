@@ -12,7 +12,7 @@ import { Printer, Highlighter, FileText } from "lucide-react"
 import { exportToDocx } from "@/lib/export-utils"
 import { Button } from "@/components/ui/button"
 import jsPDF from "jspdf"
-import html2canvas from "html2canvas"
+import { toCanvas } from "html-to-image"
 
 interface MarkdownPreviewProps {
   markdown: string
@@ -447,6 +447,11 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
       [data-pdf-capture-root="true"] [data-highlight="true"] {
         display: inline;
         -webkit-text-fill-color: currentColor;
+        line-height: inherit;
+        vertical-align: baseline;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+        padding: 0px 2px;
       }
     `
     document.head.appendChild(captureStyle)
@@ -468,51 +473,7 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
     injectedStyles.forEach((styleNode) => styleNode.remove())
   }
 
-  const normalizeHighlightTextForCanvas = (doc: Document) => {
-    const highlightNodes = Array.from(doc.querySelectorAll('[data-highlight="true"]'))
-    const parentNodes = highlightNodes
-      .map((node) => node.parentElement)
-      .filter((parent): parent is HTMLElement => Boolean(parent))
-    const processedParents = new Set<HTMLElement>()
 
-    highlightNodes.forEach((node) => {
-      const text = node.textContent || ""
-      const styleAttr = node.getAttribute("style") || ""
-      const fragment = doc.createDocumentFragment()
-
-      for (const char of Array.from(text)) {
-        const charSpan = doc.createElement("span")
-        charSpan.setAttribute("data-highlight-fragment", "true")
-        charSpan.setAttribute(
-          "style",
-          `${styleAttr}; white-space: pre; font-family: inherit; font-size: inherit; font-weight: inherit; font-style: inherit; line-height: inherit; letter-spacing: inherit; text-rendering: inherit;`
-        )
-        charSpan.textContent = char
-        fragment.appendChild(charSpan)
-      }
-
-      node.replaceWith(fragment)
-    })
-
-    parentNodes.forEach((parent) => {
-      if (!parent || processedParents.has(parent)) return
-      processedParents.add(parent)
-
-      Array.from(parent.childNodes).forEach((child) => {
-        if (child.nodeType !== Node.TEXT_NODE) return
-        if (!child.textContent) return
-
-        const textSpan = doc.createElement("span")
-        textSpan.setAttribute("data-pdf-text", "true")
-        textSpan.setAttribute(
-          "style",
-          "font-family: inherit; font-size: inherit; font-weight: inherit; font-style: inherit; line-height: inherit; letter-spacing: inherit;"
-        )
-        textSpan.textContent = child.textContent
-        parent.replaceChild(textSpan, child)
-      })
-    })
-  }
 
   const findSafePageBreakY = (
     canvas: HTMLCanvasElement,
@@ -662,17 +623,16 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
           element.style.transform = 'none'
           element.style.width = '210mm'
 
-          // html2canvas로 요소를 캔버스로 변환 (전체 높이 캡처)
-          const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
+          // html-to-image의 toCanvas로 요소를 캔버스로 변환 (SVG 기반 정교한 캡처)
+          const canvas = await toCanvas(element, {
+            pixelRatio: 2,
             backgroundColor: '#ffffff',
-            logging: false,
             width: 794, // 210mm at 96dpi
-            windowWidth: 794,
-            onclone: (clonedDoc) => {
-              normalizeHighlightTextForCanvas(clonedDoc)
+            style: {
+              transform: 'none',
+              width: '210mm',
+              minHeight: originalMinHeight,
+              height: originalHeight
             }
           })
 
@@ -695,7 +655,6 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
           }
 
           // 본문 콘텐츠: 실제 캔버스 비율 기준으로 페이지 분할
-          // (96dpi 가정값을 쓰면 환경별로 비율 왜곡이 생길 수 있음)
           const pxPerMm = canvas.width / contentWidth
           const contentHeightPx = contentHeight * pxPerMm
           const totalHeight = canvas.height
@@ -749,7 +708,6 @@ export function MarkdownPreview({ markdown, style, title, coverAuthor, coverFoot
               const imgData = pageCanvas.toDataURL('image/jpeg', 0.95)
 
               // PDF에 이미지 추가 (여백을 두고 배치)
-              // 실제 콘텐츠 비율 계산
               const actualContentHeightMm = sourceHeight / pxPerMm
               pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, contentWidth, actualContentHeightMm)
 
